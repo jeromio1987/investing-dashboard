@@ -1,4 +1,4 @@
-<\!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -139,7 +139,7 @@ au.onended=function(){setTimeout(done,1200);};
 
 function timerFallback(){
   for(var i=0;i<beats.length;i++){
-    (function(b,idx){setTimeout(function(){if(\!triggered[idx]){triggered[idx]=true;fireBeat(b);}},b.t*1000);})(beats[i],i);
+    (function(b,idx){setTimeout(function(){if(!triggered[idx]){triggered[idx]=true;fireBeat(b);}},b.t*1000);})(beats[i],i);
   }
   setTimeout(done,78800);
 }
@@ -147,7 +147,7 @@ function timerFallback(){
 document.getElementById("prompt").addEventListener("click",function(){
   document.getElementById("prompt").style.display="none";
   au.play().catch(function(){timerFallback();});
-  setTimeout(function(){if(\!audioActive){timerFallback();}},1200);
+  setTimeout(function(){if(!audioActive){timerFallback();}},1200);
 });
 document.getElementById("skip").addEventListener("click",function(){au.pause();done();});
 </script>
