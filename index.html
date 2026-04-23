@@ -1049,7 +1049,7 @@
 </head>
 <body>
 <!-- DEAD QUIET INTRO -->
-<audio id="dqA" src="george.mp3" preload="auto"></audio>
+<audio id="dqA" src="adam2.mp3" preload="auto"></audio>
 <div id="dqI"><div class="dqLB dqT"></div><div class="dqLB dqB"></div><div id="dqG"></div><div id="dqX"></div><div id="dqS"><div id="dqLA" class="dqL"></div><div id="dqLB2" class="dqL dqF"></div></div><button id="dqSk">skip</button><div id="dqP"><span>click to begin</span></div><div id="dqBr"><div id="dqW"><img src="winston.png" onerror="this.style.display='none'"><div id="dqWP">WINSTON</div></div><div id="dqBN"></div><div id="dqBS">find them first &middot; leave before everyone else gets stupid</div></div></div>
 <style>
 #dqI{position:fixed;inset:0;background:#000;z-index:9999;display:flex;align-items:center;justify-content:center;transition:opacity 1.2s ease}
@@ -1093,9 +1093,9 @@
   var tx=document.getElementById("dqX");
   var pr=document.getElementById("dqP");
   var br=document.getElementById("dqBr");
-  function show(el,txt,cls){el.textContent=txt||"";el.className="dqL "+(cls||"");void el.offsetWidth;if(txt)requestAnimationFrame(function(){el.classList.add("on")});}
+  function show(el,txt,cls){el.textContent=txt||"";el.className="dqL "+(cls||"");void el.offsetWidth;if(txt)requestAnimationFrame(function(){el.classList.add("on");});}
   function hide(el){el.classList.remove("on");}
-  function flash(){tx.classList.add("fl");setTimeout(function(){tx.classList.remove("fl")},650);}
+  function flash(){tx.classList.add("fl");setTimeout(function(){tx.classList.remove("fl");},650);}
   function tw(el,txt,cb){el.textContent="";var i=0;var iv=setInterval(function(){el.textContent+=txt[i++];if(i>=txt.length){clearInterval(iv);el.classList.add("done");if(cb)setTimeout(cb,500);}},88);}
   function showBrand(){
     br.classList.add("show");
@@ -1108,25 +1108,31 @@
   var done={};
   var beats=[
     {t:0.8,  fn:function(){show(la,"I bought Robinhood at $38 on IPO day.","");}},
-    {t:3.9,  fn:function(){show(lb,"The platform built for retail. Down 75% in six months.","dqF");flash();}},
-    {t:8.8,  fn:function(){hide(la);hide(lb);}},
-    {t:9.8,  fn:function(){show(la,"Beyond Meat was going to change everything.","");}},
-    {t:12.9, fn:function(){show(lb,"It went from $230 to $8.","dqF dqRD");flash();}},
-    {t:16.5, fn:function(){hide(la);hide(lb);}},
-    {t:17.6, fn:function(){show(la,"WeWork was valued at $47 billion.","");}},
-    {t:20.7, fn:function(){show(lb,"It never IPO'd. You couldn't even get in to lose money.","dqF");flash();}},
-    {t:26.4, fn:function(){hide(la);hide(lb);}},
-    {t:27.4, fn:function(){show(la,"I bought ETH at $5,000.","");}},
-    {t:30.0, fn:function(){show(lb,"Six months later it was $1,100.","dqF dqRD");flash();}},
-    {t:34.6, fn:function(){hide(la);hide(lb);}},
-    {t:35.7, fn:function(){show(la,"Small cap. Mid cap. Float under 30 million shares.","dqPV");}},
-    {t:39.3, fn:function(){show(lb,"The crowd hasn't priced it yet.","dqF");}},
-    {t:43.9, fn:function(){hide(la);hide(lb);}},
-    {t:44.4, fn:function(){show(la,"Story. Trigger. Few shares. Nobody watching.","dqPV");}},
-    {t:47.0, fn:function(){show(lb,"In before it spreads. Out before it peaks.","dqF");}},
-    {t:50.6, fn:function(){hide(la);hide(lb);}},
-    {t:51.2, fn:function(){show(la,"Find them first.","dqHR");}},
-    {t:52.8, fn:function(){show(lb,"Leave before everyone else gets stupid.","dqHS");}},
+    {t:4.0,  fn:function(){show(lb,"The platform built for retail. Down 75% in six months.","dqF");flash();}},
+    {t:9.5,  fn:function(){hide(la);hide(lb);}},
+    {t:10.5, fn:function(){show(la,"Beyond Meat was going to change everything.","");}},
+    {t:14.0, fn:function(){show(lb,"It went from $230 to $8.","dqF dqRD");flash();}},
+    {t:18.5, fn:function(){hide(la);hide(lb);}},
+    {t:19.5, fn:function(){show(la,"WeWork was valued at $47 billion.","");}},
+    {t:23.0, fn:function(){show(lb,"It never IPO’d. You couldn’t even get in to lose money.","dqF");flash();}},
+    {t:29.5, fn:function(){hide(la);hide(lb);}},
+    {t:30.5, fn:function(){show(la,"I bought ETH at $5,000.","");}},
+    {t:33.5, fn:function(){show(lb,"Six months later it was $1,100.","dqF dqRD");flash();}},
+    {t:38.5, fn:function(){hide(la);hide(lb);}},
+    {t:39.5, fn:function(){show(la,"Small cap. Mid cap. Float under 30 million shares.","dqPV");}},
+    {t:43.0, fn:function(){show(lb,"Goldman has 20 analysts on Apple. Satellite data. Alt data. They don’t cover a $200M float.","dqF");}},
+    {t:48.5, fn:function(){hide(la);hide(lb);}},
+    {t:49.5, fn:function(){show(la,"No analyst on the call. No Bloomberg alert. No price target.","dqPV");}},
+    {t:53.0, fn:function(){show(lb,"That’s where the setup lives.","dqF");}},
+    {t:55.5, fn:function(){hide(la);hide(lb);}},
+    {t:56.5, fn:function(){show(la,"You don’t need to be smarter. You need to be earlier.","dqPV");}},
+    {t:60.0, fn:function(){hide(la);hide(lb);}},
+    {t:61.0, fn:function(){show(la,"One trigger. Nobody watching yet.","dqPV");show(lb,"That window doesn’t stay open long.","dqF");}},
+    {t:65.5, fn:function(){hide(la);hide(lb);}},
+    {t:66.5, fn:function(){show(la,"Narrative. Catalyst. Float. Vacuum.","dqPV");}},
+    {t:69.0, fn:function(){show(lb,"Position before the narrative spreads. Exit before it peaks.","dqF");}},
+    {t:73.5, fn:function(){hide(la);hide(lb);}},
+    {t:74.5, fn:function(){show(la,"Find them first.","dqHR");show(lb,"Leave before everyone else gets stupid.","dqHS");}},
   ];
   au.ontimeupdate=function(){var t=au.currentTime;beats.forEach(function(b,i){if(!done[i]&&t>=b.t){done[i]=1;b.fn();}});};
   au.onended=function(){setTimeout(end,1800);};
@@ -1134,18 +1140,15 @@
     pr.style.display="none";
     var p=au.play();
     if(p!==undefined){
-      p.catch(function(){
-        runFallback();
-      });
+      p.catch(function(){runFallback();});
     } else {
-      // older browser — no promise returned, fire fallback after short delay
-      setTimeout(runFallback, 200);
+      setTimeout(runFallback,200);
     }
   });
   function runFallback(){
-    var delays=[800,3900,8800,9800,12900,16500,17600,20700,26400,27400,30000,34600,35700,39300,43900,44400,47000,50600,51200,52800];
+    var delays=[800,4000,9500,10500,14000,18500,19500,23000,29500,30500,33500,38500,39500,43000,48500,49500,53000,55500,56500,60000,61000,65500,66500,69000,73500,74500];
     beats.forEach(function(b,i){setTimeout(b.fn,delays[i]);});
-    setTimeout(end,56000);
+    setTimeout(end,82000);
   }
   document.getElementById("dqSk").addEventListener("click",end);
 })();
@@ -1161,7 +1164,7 @@
   <button class="tab-btn active" onclick="switchTab('hype')">📈 Hype Cycle</button>
   <button class="tab-btn" onclick="switchTab('macro')">🎛 Macro Engine</button>
   <button class="tab-btn" onclick="switchTab('smid')">🔬 SMID Alpha</button>
-  <button class="tab-btn" onclick="switchTab('sectors')">🗺 SMID Sectors</button>
+  <button class="tab-btn" onclick="switchTab('sectors')">🗺 SMID Sectors</button><button class="tab-btn" onclick="switchTab('manifesto')">📝 Manifesto</button><button class="tab-btn" onclick="switchTab('setup')">🔍 Setup Score</button>
 </div>
 
 <!-- ═══════════════════════════════════════════
@@ -4136,6 +4139,83 @@ function applySectorData(quotes) {
 </div>
 
 </div><!-- end smid-wrap -->
+</div>
+<div class="tab-panel" id="tab-manifesto">
+<div style="max-width:700px;margin:60px auto;padding:0 20px;">
+<div style="font-family:'Syne',sans-serif;font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:#333;margin-bottom:48px;">Dead Quiet — The Thesis</div>
+<div class="dq-line" style="font-family:'Syne',sans-serif;font-size:clamp(1rem,2.2vw,1.4rem);font-weight:600;color:#fff;line-height:1.5;margin-bottom:8px;">I bought Robinhood at $38 on IPO day.</div>
+<div class="dq-line dq-fact" style="font-family:'DM Sans',sans-serif;font-size:0.95rem;color:#555;font-style:italic;margin-bottom:32px;">The platform built for retail. Down 75% in six months.</div>
+<div class="dq-line" style="font-family:'Syne',sans-serif;font-size:clamp(1rem,2.2vw,1.4rem);font-weight:600;color:#fff;line-height:1.5;margin-bottom:8px;">Beyond Meat was going to change everything.</div>
+<div class="dq-line dq-fact" style="font-family:'DM Sans',sans-serif;font-size:0.95rem;color:#b03030;font-style:italic;margin-bottom:32px;">It went from $230 to $8.</div>
+<div class="dq-line" style="font-family:'Syne',sans-serif;font-size:clamp(1rem,2.2vw,1.4rem);font-weight:600;color:#fff;line-height:1.5;margin-bottom:8px;">WeWork was valued at $47 billion.</div>
+<div class="dq-line dq-fact" style="font-family:'DM Sans',sans-serif;font-size:0.95rem;color:#555;font-style:italic;margin-bottom:32px;">It never IPO’d. You couldn’t even get in to lose money.</div>
+<div class="dq-line" style="font-family:'Syne',sans-serif;font-size:clamp(1rem,2.2vw,1.4rem);font-weight:600;color:#fff;line-height:1.5;margin-bottom:8px;">I bought ETH at $5,000.</div>
+<div class="dq-line dq-fact" style="font-family:'DM Sans',sans-serif;font-size:0.95rem;color:#b03030;font-style:italic;margin-bottom:48px;">Six months later it was $1,100.</div>
+<div style="width:40px;height:1px;background:#222;margin-bottom:48px;"></div>
+<div class="dq-line" style="font-family:'Syne',sans-serif;font-size:clamp(1rem,2.2vw,1.4rem);font-weight:600;color:#e8c97a;line-height:1.5;margin-bottom:8px;">Small cap. Mid cap. Float under 30 million shares.</div>
+<div class="dq-line dq-fact" style="font-family:'DM Sans',sans-serif;font-size:0.95rem;color:#555;font-style:italic;margin-bottom:32px;">Goldman has 20 analysts on Apple. Satellite data. Alt data. They don’t cover a $200M float.</div>
+<div class="dq-line" style="font-family:'Syne',sans-serif;font-size:clamp(1rem,2.2vw,1.4rem);font-weight:600;color:#e8c97a;line-height:1.5;margin-bottom:8px;">No analyst on the call. No Bloomberg alert. No price target.</div>
+<div class="dq-line dq-fact" style="font-family:'DM Sans',sans-serif;font-size:0.95rem;color:#555;font-style:italic;margin-bottom:32px;">That’s where the setup lives.</div>
+<div class="dq-line" style="font-family:'Syne',sans-serif;font-size:clamp(1rem,2.2vw,1.4rem);font-weight:600;color:#e8c97a;line-height:1.5;margin-bottom:32px;">You don’t need to be smarter. You need to be earlier.</div>
+<div class="dq-line" style="font-family:'Syne',sans-serif;font-size:clamp(1rem,2.2vw,1.4rem);font-weight:600;color:#e8c97a;line-height:1.5;margin-bottom:8px;">One trigger. Nobody watching yet.</div>
+<div class="dq-line dq-fact" style="font-family:'DM Sans',sans-serif;font-size:0.95rem;color:#555;font-style:italic;margin-bottom:32px;">That window doesn’t stay open long.</div>
+<div class="dq-line" style="font-family:'Syne',sans-serif;font-size:clamp(1rem,2.2vw,1.4rem);font-weight:600;color:#e8c97a;line-height:1.5;margin-bottom:8px;">Narrative. Catalyst. Float. Vacuum.</div>
+<div class="dq-line dq-fact" style="font-family:'DM Sans',sans-serif;font-size:0.95rem;color:#555;font-style:italic;margin-bottom:48px;">Position before the narrative spreads. Exit before it peaks.</div>
+<div style="width:40px;height:1px;background:#222;margin-bottom:48px;"></div>
+<div class="dq-line" style="font-family:'Syne',sans-serif;font-size:clamp(1.5rem,3.5vw,2.2rem);font-weight:700;color:#fff;letter-spacing:-0.02em;margin-bottom:12px;">Find them first.</div>
+<div class="dq-line dq-fact" style="font-family:'DM Sans',sans-serif;font-size:1rem;color:#444;font-style:italic;">Leave before everyone else gets stupid.</div>
+</div>
+</div>
+<div class="tab-panel" id="tab-setup">
+<div style="padding:32px 20px;max-width:900px;margin:0 auto;">
+<div style="font-family:'Syne',sans-serif;font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:#333;margin-bottom:32px;">Dead Quiet Setup Score — SMID Vacuum Checklist</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px;">
+<div style="background:#0a0a0a;border:1px solid #1a1a1a;border-radius:6px;padding:20px;">
+<div style="font-family:'Syne',sans-serif;font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:#e8c97a;margin-bottom:16px;">Narrative</div>
+<label style="display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.85rem;color:#888;"><input type="checkbox" class="dq-chk" onchange="dqScore()"> Clear story — one sentence</label>
+<label style="display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.85rem;color:#888;"><input type="checkbox" class="dq-chk" onchange="dqScore()"> Not yet in mainstream media</label>
+<label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.85rem;color:#888;"><input type="checkbox" class="dq-chk" onchange="dqScore()"> Theme is expanding (not shrinking)</label>
+</div>
+<div style="background:#0a0a0a;border:1px solid #1a1a1a;border-radius:6px;padding:20px;">
+<div style="font-family:'Syne',sans-serif;font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:#e8c97a;margin-bottom:16px;">Catalyst</div>
+<label style="display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.85rem;color:#888;"><input type="checkbox" class="dq-chk" onchange="dqScore()"> Dated catalyst in next 60 days</label>
+<label style="display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.85rem;color:#888;"><input type="checkbox" class="dq-chk" onchange="dqScore()"> Binary outcome (pass/fail/contract)</label>
+<label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.85rem;color:#888;"><input type="checkbox" class="dq-chk" onchange="dqScore()"> Market underpricing the outcome</label>
+</div>
+<div style="background:#0a0a0a;border:1px solid #1a1a1a;border-radius:6px;padding:20px;">
+<div style="font-family:'Syne',sans-serif;font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:#e8c97a;margin-bottom:16px;">Float</div>
+<label style="display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.85rem;color:#888;"><input type="checkbox" class="dq-chk" onchange="dqScore()"> Float under 30M shares</label>
+<label style="display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.85rem;color:#888;"><input type="checkbox" class="dq-chk" onchange="dqScore()"> No covering analyst or &lt;2 analysts</label>
+<label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.85rem;color:#888;"><input type="checkbox" class="dq-chk" onchange="dqScore()"> Institutional ownership &lt; 40%</label>
+</div>
+<div style="background:#0a0a0a;border:1px solid #1a1a1a;border-radius:6px;padding:20px;">
+<div style="font-family:'Syne',sans-serif;font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:#e8c97a;margin-bottom:16px;">Vacuum</div>
+<label style="display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.85rem;color:#888;"><input type="checkbox" class="dq-chk" onchange="dqScore()"> No Bloomberg alert in last 30 days</label>
+<label style="display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.85rem;color:#888;"><input type="checkbox" class="dq-chk" onchange="dqScore()"> Volume still below 3-month avg</label>
+<label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.85rem;color:#888;"><input type="checkbox" class="dq-chk" onchange="dqScore()"> Price not yet reacted to catalyst</label>
+</div>
+</div>
+<div style="background:#0a0a0a;border:1px solid #1a1a1a;border-radius:6px;padding:24px;text-align:center;">
+<div style="font-family:'DM Sans',sans-serif;font-size:0.75rem;color:#444;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.1em;">Dead Quiet Score</div>
+<div id="dq-score-val" style="font-family:'Syne',sans-serif;font-size:3rem;font-weight:700;color:#fff;letter-spacing:-0.03em;">0<span style="font-size:1.2rem;color:#333;">/12</span></div>
+<div id="dq-score-label" style="font-family:'DM Sans',sans-serif;font-size:0.85rem;color:#333;margin-top:8px;font-style:italic;">Check criteria above</div>
+</div>
+<script>
+function dqScore(){
+  var chks=document.querySelectorAll(".dq-chk");
+  var n=0;
+  chks.forEach(function(c){if(c.checked)n++;});
+  var el=document.getElementById("dq-score-val");
+  var lb=document.getElementById("dq-score-label");
+  el.innerHTML=n+'<span style="font-size:1.2rem;color:#333;">/12</span>';
+  var col=n<=3?"#444":n<=6?"#888":n<=9?"#e8c97a":"#6ee7a0";
+  el.style.color=col;
+  var labels=["Check criteria above","Early stage — keep watching","Possible setup forming","Strong setup — size in","Dead Quiet. Pull the trigger."];
+  lb.textContent=labels[Math.floor(n/3)];
+  lb.style.color=col;
+}
+</script>
+</div>
 </div><!-- end tab-sectors -->
 <!-- end tab-sectors -->
 
