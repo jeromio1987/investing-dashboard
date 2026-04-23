@@ -1,0 +1,27 @@
+<\!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Click Test</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#000; height:100vh; display:flex; align-items:center; justify-content:center; font-family:sans-serif; color:#fff; }
+#msg { font-size:2rem; text-align:center; }
+#btn { position:fixed; inset:0; cursor:pointer; z-index:10; display:flex; align-items:center; justify-content:center; }
+#btn span { font-size:1rem; color:#555; letter-spacing:0.2em; text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div id="msg"></div>
+<div id="btn"><span>click anywhere</span></div>
+<script>
+document.getElementById('btn').onclick = function() {
+  document.getElementById('btn').style.display = 'none';
+  document.getElementById('msg').textContent = 'JS works\!';
+  setTimeout(function() {
+    document.getElementById('msg').textContent = 'Timers work too.';
+  }, 1500);
+};
+</script>
+</body>
+</html>

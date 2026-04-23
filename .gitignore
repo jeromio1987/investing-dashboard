@@ -1,8 +1,0 @@
-.claude/
-__pycache__/
-*.pyc
-*.ipynb
-app.py
-README_launch.txt
-sectoren-hype-cycle.html
-setup_scheduler.bat
