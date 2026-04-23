@@ -29,8 +29,7 @@ body { background:#000; height:100vh; overflow:hidden; }
 @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
 #end { display:none; position:fixed; inset:0; background:#000; align-items:center; justify-content:center; z-index:10; flex-direction:column; gap:32px; }
 #end.show { display:flex; }
-#dq-brand { font-family:"Syne",sans-serif; font-size:clamp(2rem,6vw,3.5rem); font-weight:700; color:#fff; letter-spacing:-0.03em; opacity:0; transition:opacity 0.6s ease; }
-#dq-brand.show { opacity:1; }
+#dq-brand { font-family:"Syne",sans-serif; font-size:clamp(2rem,6vw,3.5rem); font-weight:700; color:#fff; letter-spacing:-0.03em; min-height:1.2em; }
 #dq-tag { font-family:"DM Sans",sans-serif; font-size:clamp(0.75rem,1.5vw,0.95rem); color:#444; font-style:italic; letter-spacing:0.05em; opacity:0; transition:opacity 0.8s ease; }
 #dq-tag.show { opacity:1; }
 .bg { display:flex; gap:12px; opacity:0; transition:opacity 0.6s ease; }
@@ -66,11 +65,19 @@ body { background:#000; height:100vh; overflow:hidden; }
   <div id="dq-tag">Find them first. Leave before everyone else gets stupid.</div>
   <div class="bg" id="dq-btns">
     <button class="bt" onclick="location.reload()">Replay</button>
-    <button class="bt p" onclick="window.location='../index.html'">Enter Dashboard</button>
+    <button class="bt p" onclick="window.location='/investing-dashboard/'">Enter Dashboard</button>
   </div>
 </div>
 
 <script>
+var au=document.getElementById("au");
+var la=document.getElementById("la");
+var lb=document.getElementById("lb");
+var intro=document.getElementById("intro");
+var endDiv=document.getElementById("end");
+var triggered={};
+var audioActive=false;
+
 var beats=[
   {t:0.8,a:"I bought Robinhood at $38 on IPO day.",ac:"",b:null,bc:""},
   {t:3.8,a:null,ac:"",b:"The platform built for retail. Down 75% in six months.",bc:"fact"},
@@ -93,77 +100,49 @@ var beats=[
   {t:50.0,a:"Find them first.",ac:"hero",b:"Leave before everyone else gets stupid.",bc:"hero-sub"}
 ];
 
-var au=document.getElementById("au");
-var la=document.getElementById("la");
-var lb=document.getElementById("lb");
-var intro=document.getElementById("intro");
-var endDiv=document.getElementById("end");
-
 function sl(el,txt,cls){el.textContent=txt;el.className="line "+cls;void el.offsetWidth;setTimeout(function(){el.classList.add("visible");},20);}
 function cl(){la.classList.remove("visible");lb.classList.remove("visible");}
-
-function typewriter(el, text, speed, cb) {
-  el.textContent = "";
-  el.classList.add("show");
-  var i = 0;
-  var t = setInterval(function(){
-    el.textContent += text[i];
-    i++;
-    if(i >= text.length){ clearInterval(t); if(cb) cb(); }
-  }, speed);
-}
+function fireBeat(b){if(b.clear){cl();return;}if(b.a){sl(la,b.a,b.ac);}if(b.b){sl(lb,b.b,b.bc);}}
 
 function done(){
   intro.classList.add("fade-out");
   setTimeout(function(){
     intro.style.display="none";
     endDiv.classList.add("show");
-    var brand = document.getElementById("dq-brand");
-    var tag   = document.getElementById("dq-tag");
-    var btns  = document.getElementById("dq-btns");
-    setTimeout(function(){
-      typewriter(brand, "Dead Quiet.", 80, function(){
-        setTimeout(function(){
-          tag.classList.add("show");
-          setTimeout(function(){ btns.classList.add("show"); }, 600);
-        }, 400);
-        // Speak "Dead Quiet" with deep slow voice
-        if(window.speechSynthesis){
-          var u = new SpeechSynthesisUtterance("Dead Quiet");
-          u.rate = 0.55;
-          u.pitch = 0.4;
-          u.volume = 0.85;
-          // pick darkest available voice
-          var voices = window.speechSynthesis.getVoices();
-          var pick = voices.filter(function(v){ return v.lang.indexOf("en") === 0; });
-          if(pick.length) u.voice = pick[pick.length - 1];
-          window.speechSynthesis.speak(u);
-        }
-      });
-    }, 300);
-  }, 1200);
+    var brand=document.getElementById("dq-brand");
+    var tag=document.getElementById("dq-tag");
+    var btns=document.getElementById("dq-btns");
+    var txt="Dead Quiet.";
+    var i=0;
+    brand.textContent="";
+    var tw=setInterval(function(){brand.textContent+=txt[i];i++;if(i>=txt.length){clearInterval(tw);setTimeout(function(){tag.classList.add("show");setTimeout(function(){btns.classList.add("show");},600);},400);if(window.speechSynthesis){var u=new SpeechSynthesisUtterance("Dead Quiet");u.rate=0.55;u.pitch=0.4;u.volume=0.85;window.speechSynthesis.speak(u);}}},80);
+  },1200);
 }
 
-function run(){
+au.ontimeupdate=function(){
+  audioActive=true;
+  var t=au.currentTime;
   for(var i=0;i<beats.length;i++){
-    (function(b){
-      setTimeout(function(){
-        if(b.clear){cl();return;}
-        if(b.a){sl(la,b.a,b.ac);}
-        if(b.b){sl(lb,b.b,b.bc);}
-      },b.t*1000);
-    })(beats[i]);
+    if(triggered[i]||t<beats[i].t) continue;
+    triggered[i]=true;
+    fireBeat(beats[i]);
+  }
+};
+au.onended=function(){setTimeout(done,1200);};
+
+function timerFallback(){
+  for(var i=0;i<beats.length;i++){
+    (function(b,idx){setTimeout(function(){if(\!triggered[idx]){triggered[idx]=true;fireBeat(b);}},b.t*1000);})(beats[i],i);
   }
   setTimeout(done,53500);
 }
 
 document.getElementById("prompt").addEventListener("click",function(){
   document.getElementById("prompt").style.display="none";
-  au.play().catch(function(){});
-  run();
+  au.play().catch(function(){timerFallback();});
+  setTimeout(function(){if(\!audioActive){timerFallback();}},1200);
 });
 document.getElementById("skip").addEventListener("click",function(){au.pause();done();});
-
 </script>
 </body>
 </html>
