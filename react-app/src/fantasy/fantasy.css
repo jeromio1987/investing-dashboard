@@ -1,0 +1,139 @@
+.fantasy-wrap {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.fantasy-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 22px;
+  margin-bottom: 16px;
+}
+
+.fantasy-card h2 {
+  font-family: Syne, sans-serif;
+  font-size: 1.1rem;
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.fantasy-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+  margin-bottom: 12px;
+}
+
+.fantasy-input {
+  flex: 1;
+  min-width: 160px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+.fantasy-btn {
+  font-family: Syne, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: #14142a;
+  color: #fff;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+}
+
+.fantasy-btn:hover {
+  border-color: var(--yellow);
+}
+
+.fantasy-btn.primary {
+  border-color: var(--yellow);
+  color: var(--yellow);
+}
+
+.fantasy-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.fantasy-nav {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+
+.fantasy-nav a {
+  font-family: Syne, sans-serif;
+  font-size: 0.75rem;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  text-decoration: none;
+}
+
+.fantasy-nav a.active {
+  border-color: var(--teal);
+  color: var(--teal);
+}
+
+.fantasy-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+
+.fantasy-table th,
+.fantasy-table td {
+  text-align: left;
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.fantasy-table th {
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.fantasy-muted {
+  color: var(--text-dim);
+  font-size: 0.72rem;
+}
+
+.fantasy-code {
+  font-family: ui-monospace, monospace;
+  font-size: 1.1rem;
+  color: var(--green);
+  letter-spacing: 0.08em;
+}
+
+.fantasy-modal-back {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 16px;
+}
+
+.fantasy-modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  max-width: 400px;
+  width: 100%;
+}
