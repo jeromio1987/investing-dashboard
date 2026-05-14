@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Secrets
+backend/.env
+react-app/.env
+!*.env.example
+
+# Node
+node_modules/
+
+# Rust / Tauri
+src-tauri/target/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Misc
+test_dir/
+*.log
+*.mp3
+*.wav
+
+# Local Netlify folder
+.netlify
