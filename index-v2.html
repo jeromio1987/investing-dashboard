@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dead Quiet — Investing Dashboard v2</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Sans:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080810;--surface:#0f0f1a;--surface2:#0c0c1c;--border:#1a1a2e;
+  --text:#c0c0d0;--dim:#44445a;--dim2:#2a2a3e;
+  --green:#4ade80;--yellow:#fbbf24;--orange:#fb923c;--red:#f87171;
+  --blue:#60a5fa;--purple:#c084fc;--teal:#2dd4bf;--pink:#f472b6;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+
+/* ── TICKER TAPE ── */
+.ticker-tape{background:#05050f;border-bottom:1px solid var(--border);overflow:hidden;height:28px;display:flex;align-items:center;position:sticky;top:0;z-index:100;}
+.tape-track{display:flex;gap:0;white-space:nowrap;animation:tape 60s linear infinite;will-change:transform;}
+.tape-track:hover{animation-play-state:paused;}
+@keyframes tape{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.tape-item{display:inline-flex;align-items:center;gap:5px;padding:0 18px;font-size:0.65rem;font-family:'Syne',sans-serif;font-weight:600;border-right:1px solid var(--border);height:28px;}
+.tape-sym{color:#fff;letter-spacing:0.04em;}
+.tape-price{color:var(--dim);}
+.tape-chg{font-weight:700;}
+.tape-sep{color:var(--dim);padding:0 6px;font-size:0.7rem;}
+
+/* ── LIVE BAR ── */
+.live-bar{background:var(--surface2);border-bottom:1px solid var(--border);padding:8px 20px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;position:sticky;top:28px;z-index:99;}
+.lb-group{display:flex;align-items:center;gap:2px;padding:0 8px;border-right:1px solid var(--border);}
+.lb-group:last-of-type{border-right:none;}
+.lb-label{font-size:0.55rem;color:var(--dim);letter-spacing:0.1em;text-transform:uppercase;margin-right:4px;}
+.lb-item{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:4px;background:rgba(255,255,255,0.03);border:1px solid var(--border);margin:2px;}
+.lb-sym{font-family:'Syne',sans-serif;font-size:0.63rem;font-weight:700;color:#fff;}
+.lb-val{font-size:0.68rem;font-weight:700;}
+.lb-pct{font-size:0.58rem;}
+.live-status{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:0.58rem;color:var(--dim);}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--dim);flex-shrink:0;}
+.live-dot.live{background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 2s infinite;}
+.live-dot.err{background:var(--red);}
+.live-dot.loading{background:var(--yellow);animation:pulse 0.8s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.refresh-btn{background:none;border:1px solid var(--border);color:var(--dim);font-size:0.55rem;padding:2px 7px;border-radius:3px;cursor:pointer;font-family:inherit;letter-spacing:0.05em;}
+.refresh-btn:hover{border-color:var(--blue);color:var(--blue);}
+.export-btn{background:none;border:1px solid var(--dim2);color:var(--dim);font-size:0.55rem;padding:2px 8px;border-radius:3px;cursor:pointer;font-family:'Syne',sans-serif;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;}
+.export-btn:hover{border-color:var(--yellow);color:var(--yellow);}
+
+/* ── HEADER ── */
+.main-header{text-align:center;padding:20px 20px 0;max-width:1280px;margin:0 auto;}
+.main-header h1{font-family:'Syne',sans-serif;font-size:clamp(1.1rem,3vw,1.7rem);font-weight:700;color:#fff;letter-spacing:-0.02em;}
+.main-header h1 span{color:var(--yellow);}
+.main-header .sub{font-size:0.62rem;color:var(--dim);margin-top:5px;letter-spacing:0.1em;text-transform:uppercase;}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:4px;padding:14px 20px 0;max-width:1280px;margin:0 auto;flex-wrap:wrap;}
+.tab-btn{font-family:'Syne',sans-serif;font-size:0.72rem;font-weight:600;padding:7px 18px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--dim);cursor:pointer;letter-spacing:0.04em;transition:all 0.15s;}
+.tab-btn:hover{color:var(--text);border-color:var(--dim2);}
+.tab-btn.active{background:#14142a;color:#fff;border-color:var(--yellow);}
+.tab-panel{display:none;width:100%;max-width:1280px;margin:0 auto;padding:20px 20px 64px;}
+.tab-panel.active{display:block;}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;transition:border-color 0.2s,transform 0.15s;}
+.card:hover{transform:translateY(-1px);border-color:var(--dim2);}
+.card-title{font-family:'Syne',sans-serif;font-size:0.8rem;font-weight:700;color:#fff;margin-bottom:6px;}
+
+/* ── SECTION HEADER ── */
+.sec-head{font-family:'Syne',sans-serif;font-size:0.6rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--dim);margin:28px 0 12px;border-bottom:1px solid var(--border);padding-bottom:6px;display:flex;align-items:center;gap:8px;}
+
+/* ── TABLES ── */
+.tbl{width:100%;border-collapse:collapse;font-size:0.68rem;}
+.tbl th{background:var(--surface2);color:var(--dim);font-weight:600;font-size:0.58rem;letter-spacing:0.08em;text-transform:uppercase;padding:7px 10px;border-bottom:1px solid var(--border);text-align:left;cursor:pointer;user-select:none;white-space:nowrap;}
+.tbl th:hover{color:var(--text);}
+.tbl td{padding:8px 10px;border-bottom:1px solid rgba(26,26,46,0.7);vertical-align:middle;white-space:nowrap;}
+.tbl tr:hover td{background:rgba(255,255,255,0.02);}
+.tbl th.sort-asc::after{content:' ↑';color:var(--yellow);}
+.tbl th.sort-desc::after{content:' ↓';color:var(--yellow);}
+
+/* ── BADGES ── */
+.badge{font-size:0.58rem;font-weight:700;padding:2px 8px;border-radius:3px;letter-spacing:0.04em;white-space:nowrap;}
+.b-green{background:rgba(74,222,128,0.12);color:var(--green);border:1px solid rgba(74,222,128,0.25);}
+.b-yellow{background:rgba(251,191,36,0.12);color:var(--yellow);border:1px solid rgba(251,191,36,0.25);}
+.b-red{background:rgba(248,113,113,0.12);color:var(--red);border:1px solid rgba(248,113,113,0.25);}
+.b-blue{background:rgba(96,165,250,0.12);color:var(--blue);border:1px solid rgba(96,165,250,0.25);}
+.b-purple{background:rgba(192,132,252,0.12);color:var(--purple);border:1px solid rgba(192,132,252,0.25);}
+.b-teal{background:rgba(45,212,191,0.12);color:var(--teal);border:1px solid rgba(45,212,191,0.25);}
+.b-orange{background:rgba(251,146,60,0.12);color:var(--orange);border:1px solid rgba(251,146,60,0.25);}
+
+/* ── PRICE COLORS ── */
+.pos{color:var(--green);}
+.neg{color:var(--red);}
+.flat{color:var(--dim);}
+
+/* ── SMID BOX ── */
+.smid-box{background:#0a0a18;border-left:3px solid var(--yellow);border-radius:0 6px 6px 0;padding:10px 14px;margin-bottom:14px;font-size:0.68rem;color:var(--text);line-height:1.7;}
+.smid-box strong{color:var(--yellow);}
+.smid-box.blue{border-left-color:var(--blue);}
+.smid-box.blue strong{color:var(--blue);}
+.smid-box.green{border-left-color:var(--green);}
+.smid-box.green strong{color:var(--green);}
+.smid-box.red{border-left-color:var(--red);}
+.smid-box.red strong{color:var(--red);}
+
+/* ── SUB TABS ── */
+.sub-tabs{display:flex;gap:4px;margin-bottom:18px;flex-wrap:wrap;}
+.sub-tab{font-family:'Syne',sans-serif;font-size:0.66rem;font-weight:600;padding:5px 13px;border-radius:5px;border:1px solid var(--border);background:var(--surface);color:var(--dim);cursor:pointer;transition:all 0.15s;letter-spacing:0.04em;}
+.sub-tab:hover{color:var(--text);}
+.sub-tab.active{background:#14142a;color:#fff;border-color:var(--teal);}
+.sub-panel{display:none;}
+.sub-panel.active{display:block;}
+
+/* ── MACRO GRID ── */
+.macro-kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:24px;}
+.macro-kpi{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;}
+.macro-kpi .mk-label{font-size:0.58rem;color:var(--dim);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;}
+.macro-kpi .mk-val{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:700;color:#fff;line-height:1;}
+.macro-kpi .mk-pct{font-size:0.65rem;margin-top:4px;}
+.macro-kpi .mk-name{font-size:0.6rem;color:var(--dim);margin-top:3px;}
+
+/* ── CHART CONTAINERS ── */
+.chart-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:16px;}
+.chart-box-title{font-family:'Syne',sans-serif;font-size:0.72rem;font-weight:700;color:#fff;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+
+/* ── PORTFOLIO TAB ── */
+.pf-summary{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:24px;}
+.pf-kpi{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;}
+.pf-kpi .pk-label{font-size:0.57rem;color:var(--dim);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;}
+.pf-kpi .pk-val{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:700;color:#fff;}
+.pf-kpi .pk-sub{font-size:0.62rem;color:var(--dim);margin-top:3px;}
+
+.pf-form{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;}
+.pf-form label{font-size:0.6rem;color:var(--dim);letter-spacing:0.07em;text-transform:uppercase;display:block;margin-bottom:3px;}
+.pf-form input,select{width:100%;background:#0a0a18;border:1px solid var(--dim2);border-radius:5px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.75rem;padding:6px 9px;outline:none;transition:border-color 0.2s;}
+.pf-form input:focus,select:focus{border-color:var(--yellow);}
+.pf-form .add-btn{background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.3);color:var(--yellow);font-family:'Syne',sans-serif;font-size:0.65rem;font-weight:700;padding:7px 14px;border-radius:5px;cursor:pointer;letter-spacing:0.06em;width:100%;margin-top:16px;}
+.pf-form .add-btn:hover{background:rgba(251,191,36,0.2);}
+
+/* ── FX TABLE ── */
+.fx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:24px;}
+.fx-card{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:12px 14px;}
+.fx-pair{font-family:'Syne',sans-serif;font-size:0.72rem;font-weight:700;color:var(--dim);letter-spacing:0.05em;}
+.fx-rate{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700;color:#fff;margin-top:4px;}
+.fx-base{font-size:0.58rem;color:var(--dim);margin-top:2px;}
+
+/* ── SETUP SCORE ── */
+.score-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px;}
+@media(max-width:600px){.score-grid{grid-template-columns:1fr;}}
+.score-card{background:#0a0a0a;border:1px solid #1a1a1a;border-radius:6px;padding:18px;}
+.score-cat{font-family:'Syne',sans-serif;font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--yellow);margin-bottom:14px;}
+.score-item{display:flex;align-items:center;gap:10px;margin-bottom:9px;cursor:pointer;}
+.score-item label{font-size:0.8rem;color:#888;cursor:pointer;}
+.score-item input[type=checkbox]{width:14px;height:14px;accent-color:var(--yellow);cursor:pointer;}
+
+/* ── ACCESS LEGEND ── */
+.access-legend{display:flex;gap:14px;margin-bottom:12px;flex-wrap:wrap;align-items:center;}
+.access-item{display:flex;align-items:center;gap:6px;font-size:0.65rem;color:var(--dim);}
+.access-ring{width:16px;height:16px;border-radius:50%;flex-shrink:0;border:2px solid;display:flex;align-items:center;justify-content:center;font-size:0.55rem;font-weight:700;}
+.ring-open{border-color:var(--green);color:var(--green);background:rgba(74,222,128,0.08);}
+.ring-partial{border-color:var(--yellow);color:var(--yellow);background:rgba(251,191,36,0.08);}
+.ring-closed{border-color:var(--red);color:var(--red);background:rgba(248,113,113,0.08);}
+
+/* ── HYPE CYCLE SVG ── */
+.chart-wrap{width:100%;position:relative;margin-bottom:16px;}
+.chart-wrap svg{width:100%;height:auto;overflow:visible;}
+
+/* ── SCENARIO CARDS ── */
+.scenarios{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px;}
+@media(max-width:640px){.scenarios{grid-template-columns:1fr;}}
+.scenario-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:13px 15px;}
+.sc-label{font-family:'Syne',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:6px;}
+.sc-base .sc-label{color:var(--blue);}
+.sc-bull .sc-label{color:var(--green);}
+.sc-bear .sc-label{color:var(--red);}
+.sc-desc{font-size:0.68rem;color:var(--text);line-height:1.5;margin-bottom:6px;}
+.sc-best{font-size:0.62rem;color:var(--dim);}
+
+/* ── MACRO SELECTORS ── */
+.macro-selectors{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+@media(max-width:640px){.macro-selectors{grid-template-columns:1fr;}}
+.macro-group label{display:block;font-size:0.58rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;}
+.macro-group select{width:100%;background:var(--surface2);border:1px solid var(--dim2);border-radius:6px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.72rem;padding:7px 10px;cursor:pointer;outline:none;}
+.macro-group select:focus{border-color:var(--yellow);}
+.regime-output{background:var(--surface2);border:1px solid #1e1e38;border-radius:8px;padding:14px 16px;margin-bottom:20px;min-height:80px;}
+.ro-title{font-family:'Syne',sans-serif;font-size:0.78rem;font-weight:700;color:#fff;margin-bottom:10px;}
+.regime-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.regime-chip{font-size:0.6rem;font-weight:600;padding:3px 9px;border-radius:20px;letter-spacing:0.05em;}
+.chip-over{background:rgba(74,222,128,0.15);color:var(--green);border:1px solid rgba(74,222,128,0.3);}
+.chip-neutral{background:rgba(96,165,250,0.15);color:var(--blue);border:1px solid rgba(96,165,250,0.3);}
+.chip-under{background:rgba(248,113,113,0.15);color:var(--red);border:1px solid rgba(248,113,113,0.3);}
+.chip-hedge{background:rgba(192,132,252,0.15);color:var(--purple);border:1px solid rgba(192,132,252,0.3);}
+.regime-row{display:flex;gap:6px;align-items:baseline;margin-bottom:4px;font-size:0.67rem;}
+.regime-row span{color:var(--dim);min-width:90px;}
+.regime-row strong{color:var(--text);}
+
+/* ── MANIFESTO ── */
+.manifesto{max-width:640px;margin:40px auto;padding:0 20px;}
+.mf-label{font-family:'Syne',sans-serif;font-size:0.58rem;letter-spacing:0.25em;text-transform:uppercase;color:#333;margin-bottom:40px;}
+.mf-line{font-family:'Syne',sans-serif;font-size:clamp(1rem,2.2vw,1.35rem);font-weight:600;color:#fff;line-height:1.5;margin-bottom:8px;}
+.mf-fact{font-family:'DM Sans',sans-serif;font-size:0.92rem;color:#555;font-style:italic;margin-bottom:30px;}
+.mf-fact.red{color:#b03030;}
+.mf-gold{color:#e8c97a;}
+.mf-divider{width:40px;height:1px;background:#1a1a1a;margin:36px 0;}
+.mf-final{font-family:'Syne',sans-serif;font-size:clamp(1.4rem,3.2vw,2rem);font-weight:700;color:#fff;letter-spacing:-0.02em;margin-bottom:10px;}
+
+/* ── PRINT ── */
+@media print{
+  .ticker-tape,.live-bar,.tabs,.export-btn,.refresh-btn{display:none!important;}
+  .tab-panel{display:block!important;page-break-after:always;}
+  body{background:#fff;color:#000;}
+}
+
+/* ── TOOLTIP ── */
+.tooltip{position:fixed;background:#15152a;border:1px solid #333;border-radius:6px;padding:9px 13px;font-size:0.68rem;pointer-events:none;opacity:0;transition:opacity 0.12s;z-index:300;max-width:220px;line-height:1.5;}
+.tooltip.visible{opacity:1;}
+.tooltip strong{display:block;margin-bottom:3px;font-size:0.72rem;}
+
+/* ── SECTOR TAGS ── */
+.tag{font-size:0.57rem;font-weight:700;padding:2px 7px;border-radius:3px;letter-spacing:0.04em;}
+.tag-uranium{background:rgba(251,191,36,0.15);color:var(--yellow);}
+.tag-energy{background:rgba(249,115,22,0.15);color:var(--orange);}
+.tag-aiinfra{background:rgba(96,165,250,0.15);color:var(--blue);}
+.tag-bioai{background:rgba(192,132,252,0.15);color:var(--purple);}
+.tag-defense{background:rgba(96,165,250,0.15);color:var(--blue);}
+.tag-silver{background:rgba(192,192,220,0.15);color:#c0c0dc;}
+
+/* ── WATCHLIST SCORE ── */
+.score-num{font-family:'Syne',sans-serif;font-size:2.8rem;font-weight:700;color:#fff;letter-spacing:-0.03em;text-align:center;}
+.score-denom{font-size:1.1rem;color:#333;}
+.score-label-out{font-family:'DM Sans',sans-serif;font-size:0.82rem;color:#333;text-align:center;margin-top:8px;font-style:italic;}
+
+/* ── CONVICTION BADGES ── */
+.cv{font-size:0.57rem;font-weight:700;padding:2px 7px;border-radius:3px;letter-spacing:0.04em;}
+.cv-h5{background:rgba(74,222,128,0.18);color:var(--green);}
+.cv-h4{background:rgba(74,222,128,0.1);color:#86efac;}
+.cv-h3{background:rgba(251,191,36,0.12);color:var(--yellow);}
+.cv-h2{background:rgba(251,115,61,0.12);color:var(--orange);}
+.cv-h1{background:rgba(248,113,113,0.1);color:var(--red);}
+.cv-spec{background:rgba(192,132,252,0.12);color:var(--purple);}
+
+/* ── SMID TABLE ── */
+.smid-table-wrap{overflow-x:auto;margin-bottom:24px;}
+.smid-tbl{width:100%;border-collapse:collapse;font-size:0.68rem;min-width:800px;}
+.smid-tbl th{background:#0a0a18;color:var(--dim);padding:7px 10px;border-bottom:1px solid var(--border);font-size:0.58rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;text-align:left;cursor:pointer;white-space:nowrap;}
+.smid-tbl td{padding:8px 10px;border-bottom:1px solid rgba(26,26,46,0.7);vertical-align:middle;white-space:nowrap;}
+.smid-tbl tr:hover td{background:rgba(255,255,255,0.02);}
+
+/* ── TABLE SEARCH ── */
+.tbl-controls{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center;}
+.tbl-search{flex:1;min-width:150px;background:var(--surface2);border:1px solid var(--dim2);border-radius:6px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.72rem;padding:7px 10px;outline:none;}
+.tbl-search:focus{border-color:var(--yellow);}
+.filter-btn{font-size:0.6rem;font-weight:600;padding:5px 11px;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--dim);cursor:pointer;transition:all 0.15s;letter-spacing:0.04em;}
+.filter-btn:hover{color:var(--text);}
+.filter-btn.active{background:#1a1a30;color:#fff;border-color:var(--yellow);}
+
+/* ── SMID ALPHA CARDS (movers) ── */
+.mover-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-bottom:24px;}
+.mover-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;cursor:pointer;transition:border-color 0.2s;}
+.mover-card:hover,.mover-card.expanded{border-color:var(--teal);}
+.mover-header{display:flex;align-items:center;gap:10px;padding:11px 14px;background:#0c0c1e;}
+.mover-ticker{font-family:'Syne',sans-serif;font-weight:700;font-size:0.85rem;color:#fff;}
+.mover-name{font-size:0.65rem;color:var(--dim);flex:1;}
+.mover-body{padding:12px 14px;display:none;}
+.mover-card.expanded .mover-body{display:block;}
+.mover-preview{padding:6px 14px 10px;font-size:0.63rem;color:var(--dim);}
+.mover-preview strong{color:var(--teal);font-size:0.66rem;}
+.driver-list{list-style:none;margin-bottom:10px;}
+.driver-item{display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:1px solid rgba(26,26,46,0.6);font-size:0.65rem;line-height:1.5;}
+.driver-item:last-child{border-bottom:none;}
+.driver-rank{font-family:'Syne',sans-serif;font-weight:700;font-size:0.68rem;min-width:20px;text-align:center;margin-top:1px;}
+.rank-1{color:var(--yellow);}
+.rank-2{color:var(--orange);}
+.rank-3{color:var(--dim);}
+.driver-text{flex:1;color:var(--text);}
+.driver-text em{color:var(--dim);font-style:italic;font-size:0.6rem;}
+.driver-move{font-weight:700;font-size:0.63rem;white-space:nowrap;}
+.move-pos{color:var(--green);}
+.move-neg{color:var(--red);}
+.move-both{color:var(--yellow);}
+
+/* ── DATA WARNING ── */
+.data-warn{font-size:0.6rem;color:var(--dim);background:#0c0c18;border:1px solid #1a1a28;border-radius:5px;padding:7px 10px;margin-bottom:14px;display:flex;gap:6px;align-items:flex-start;}
+
+/* ── ALLOCATION BARS ── */
+.alloc-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.alloc-label{font-size:0.67rem;color:var(--dim);min-width:150px;}
+.alloc-bar-wrap{flex:1;height:12px;background:#0c0c1c;border-radius:4px;overflow:hidden;}
+.alloc-bar{height:100%;border-radius:4px;transition:width 0.4s;}
+.alloc-pct{font-size:0.68rem;font-weight:700;min-width:34px;text-align:right;}
+</style>
+</head>
+<body>
+
+<!-- INTRO (Dead Quiet) -->
+<audio id="dqA" src="adam2.mp3" preload="auto"></audio>
+<div id="dqI">
+  <div class="dqLB dqT"></div><div class="dqLB dqB"></div>
+  <div id="dqG"></div><div id="dqX"></div>
+  <div id="dqS"><div id="dqLA" class="dqL"></div><div id="dqLB2" class="dqL dqF"></div></div>
+  <button id="dqSk">skip</button>
+  <div id="dqP"><span>click to begin</span></div>
+  <div id="dqBr"><div id="dqW"><img src="winston.png" onerror="this.style.display='none'"><div id="dqWP">WINSTON</div></div><div id="dqBN"></div><div id="dqBS">find them first · leave before everyone else gets stupid</div></div>
+</div>
+<style>
+#dqI{position:fixed;inset:0;background:#000;z-index:9999;display:flex;align-items:center;justify-content:center;transition:opacity 1.2s ease}
+#dqI.out{opacity:0;pointer-events:none}
+.dqLB{position:absolute;left:0;right:0;height:11vh;background:#000;z-index:3}
+.dqT{top:0}.dqB{bottom:0}
+#dqG{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:.4;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E")}
+#dqX{position:absolute;inset:0;z-index:4;pointer-events:none;background:rgba(120,6,6,0);transition:background .12s ease}
+#dqX.fl{background:rgba(120,6,6,0.06)}
+#dqS{position:relative;z-index:5;width:100%;max-width:820px;padding:0 10vw;display:flex;flex-direction:column;gap:22px}
+.dqL{font-family:"Syne",sans-serif;font-size:clamp(1.05rem,2.6vw,1.6rem);font-weight:600;color:#fff;letter-spacing:-.01em;line-height:1.3;opacity:0;transform:translateY(6px);transition:opacity .65s ease,transform .65s ease}
+.dqF{font-family:"DM Sans",sans-serif;font-size:clamp(.8rem,1.75vw,1.05rem);font-weight:300;color:#666;font-style:italic}
+.dqPV{color:#e8c97a}.dqRD{color:#922}
+.dqHR{font-size:clamp(1.4rem,4vw,2.4rem)!important;font-weight:700;letter-spacing:-.03em}
+.dqHS{font-family:"DM Sans",sans-serif!important;font-size:clamp(.75rem,1.5vw,.9rem)!important;font-weight:300!important;color:#3a3a3a!important;font-style:italic}
+.dqL.on{opacity:1;transform:translateY(0)}
+#dqSk{position:absolute;bottom:14vh;right:5vw;z-index:6;background:none;border:none;color:#1e1e1e;font-family:"DM Sans",sans-serif;font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;transition:color .2s}
+#dqSk:hover{color:#555}
+#dqP{position:absolute;inset:0;z-index:7;display:flex;align-items:center;justify-content:center;cursor:pointer}
+#dqP span{font-family:"Syne",sans-serif;font-size:.7rem;letter-spacing:.25em;text-transform:uppercase;color:#222;animation:dqpulse 2.2s ease-in-out infinite}
+@keyframes dqpulse{0%,100%{opacity:.3}50%{opacity:.9}}
+#dqBr{display:none;position:absolute;inset:0;z-index:8;background:#000;flex-direction:column;align-items:center;justify-content:center;gap:22px}
+#dqBr.show{display:flex}
+#dqW{width:130px;height:130px;border-radius:50%;overflow:hidden;border:1px solid #141414;display:flex;align-items:center;justify-content:center;background:#080808;opacity:0;transition:opacity .9s ease}
+#dqW img{width:100%;height:100%;object-fit:cover;filter:grayscale(100%) contrast(1.1)}
+#dqWP{font-family:"Syne",sans-serif;font-size:.55rem;color:#1a1a1a;letter-spacing:.2em;text-transform:uppercase}
+#dqW.on{opacity:1}
+#dqBN{font-family:"Syne",sans-serif;font-size:clamp(2.6rem,7.5vw,5.5rem);font-weight:700;color:#fff;letter-spacing:-.04em;min-height:1.2em}
+#dqBN::after{content:"|";animation:dqcur .7s step-end infinite}
+@keyframes dqcur{0%,100%{opacity:1}50%{opacity:0}}
+#dqBN.done::after{display:none}
+#dqBS{font-family:"DM Sans",sans-serif;font-size:clamp(.62rem,1.2vw,.78rem);font-weight:300;color:#252525;letter-spacing:.2em;text-transform:uppercase;opacity:0;transition:opacity 1s ease}
+#dqBS.on{opacity:1}
+</style>
+<script>
+(function(){
+  var au=document.getElementById("dqA"),wi=document.getElementById("dqI"),la=document.getElementById("dqLA"),lb=document.getElementById("dqLB2"),tx=document.getElementById("dqX"),pr=document.getElementById("dqP"),br=document.getElementById("dqBr");
+  function show(el,txt,cls){el.textContent=txt||"";el.className="dqL "+(cls||"");void el.offsetWidth;if(txt)requestAnimationFrame(function(){el.classList.add("on");});}
+  function hide(el){el.classList.remove("on");}
+  function flash(){tx.classList.add("fl");setTimeout(function(){tx.classList.remove("fl");},650);}
+  function tw(el,txt,cb){el.textContent="";var i=0;var iv=setInterval(function(){el.textContent+=txt[i++];if(i>=txt.length){clearInterval(iv);el.classList.add("done");if(cb)setTimeout(cb,500);}},88);}
+  function showBrand(){br.classList.add("show");var w=document.getElementById("dqW"),bn=document.getElementById("dqBN"),bs=document.getElementById("dqBS");setTimeout(function(){w.classList.add("on");},400);setTimeout(function(){tw(bn,"Dead Quiet.",function(){setTimeout(function(){bs.classList.add("on");},300);});},1000);setTimeout(function(){br.style.transition="opacity 1s ease";br.style.opacity="0";setTimeout(function(){wi.remove();},1100);},5800);}
+  function end(){au.pause();wi.classList.add("out");setTimeout(function(){wi.style.display="none";showBrand();},1200);}
+  var done={};
+  var beats=[
+    {t:0.8,fn:function(){show(la,"I bought Robinhood at $38 on IPO day.","");}},
+    {t:4.0,fn:function(){show(lb,"The platform built for retail. Down 75% in six months.","dqF");flash();}},
+    {t:9.5,fn:function(){hide(la);hide(lb);}},
+    {t:10.5,fn:function(){show(la,"Beyond Meat was going to change everything.","");}},
+    {t:14.0,fn:function(){show(lb,"It went from $230 to $8.","dqF dqRD");flash();}},
+    {t:18.5,fn:function(){hide(la);hide(lb);}},
+    {t:19.5,fn:function(){show(la,"WeWork was valued at $47 billion.","");}},
+    {t:23.0,fn:function(){show(lb,"It never IPO'd. You couldn't even get in to lose money.","dqF");flash();}},
+    {t:29.5,fn:function(){hide(la);hide(lb);}},
+    {t:30.5,fn:function(){show(la,"I bought ETH at $5,000.","");}},
+    {t:33.5,fn:function(){show(lb,"Six months later it was $1,100.","dqF dqRD");flash();}},
+    {t:38.5,fn:function(){hide(la);hide(lb);}},
+    {t:39.5,fn:function(){show(la,"Small cap. Mid cap. Float under 30 million shares.","dqPV");}},
+    {t:43.0,fn:function(){show(lb,"Goldman has 20 analysts on Apple. They don't cover a $200M float.","dqF");}},
+    {t:48.5,fn:function(){hide(la);hide(lb);}},
+    {t:49.5,fn:function(){show(la,"No analyst on the call. No Bloomberg alert. No price target.","dqPV");}},
+    {t:53.0,fn:function(){show(lb,"That's where the setup lives.","dqF");}},
+    {t:55.5,fn:function(){hide(la);hide(lb);}},
+    {t:56.5,fn:function(){show(la,"You don't need to be smarter. You need to be earlier.","dqPV");}},
+    {t:60.0,fn:function(){hide(la);hide(lb);}},
+    {t:61.0,fn:function(){show(la,"One trigger. Nobody watching yet.","dqPV");show(lb,"That window doesn't stay open long.","dqF");}},
+    {t:65.5,fn:function(){hide(la);hide(lb);}},
+    {t:66.5,fn:function(){show(la,"Narrative. Catalyst. Float. Vacuum.","dqPV");}},
+    {t:69.0,fn:function(){show(lb,"Position before the narrative spreads. Exit before it peaks.","dqF");}},
+    {t:73.5,fn:function(){hide(la);hide(lb);}},
+    {t:74.5,fn:function(){show(la,"Find them first.","dqHR");show(lb,"Leave before everyone else gets stupid.","dqHS");}},
+  ];
+  au.ontimeupdate=function(){var t=au.currentTime;beats.forEach(function(b,i){if(!done[i]&&t>=b.t){done[i]=1;b.fn();}});};
+  au.onended=function(){setTimeout(end,1800);};
+  pr.addEventListener("click",function(){pr.style.display="none";var p=au.play();if(p!==undefined){p.catch(function(){runFallback();});}else{setTimeout(runFallback,200);}});
+  function runFallback(){var delays=[800,4000,9500,10500,14000,18500,19500,23000,29500,30500,33500,38500,39500,43000,48500,49500,53000,55500,56500,60000,61000,65500,66500,69000,73500,74500];beats.forEach(function(b,i){setTimeout(b.fn,delays[i]);});setTimeout(end,82000);}
+  document.getElementById("dqSk").addEventListener("click",end);
+})();
+</script>
+
+<!-- TICKER TAPE -->
+<div class="ticker-tape"><div class="tape-track" id="tapeTrack"></div></div>
+
+<!-- LIVE BAR -->
+<div class="live-bar">
+  <div class="lb-group">
+    <span class="lb-label">Macro</span>
+    <div class="lb-item" id="lb-VIX"><span class="lb-sym">VIX</span><span class="lb-val flat" id="lb-VIX-v">—</span><span class="lb-pct flat" id="lb-VIX-p"></span></div>
+    <div class="lb-item" id="lb-TNX"><span class="lb-sym">10Y</span><span class="lb-val flat" id="lb-TNX-v">—</span><span class="lb-pct flat" id="lb-TNX-p"></span></div>
+    <div class="lb-item" id="lb-WTI"><span class="lb-sym">WTI</span><span class="lb-val flat" id="lb-WTI-v">—</span><span class="lb-pct flat" id="lb-WTI-p"></span></div>
+    <div class="lb-item" id="lb-GOLD"><span class="lb-sym">GOLD</span><span class="lb-val flat" id="lb-GOLD-v">—</span><span class="lb-pct flat" id="lb-GOLD-p"></span></div>
+    <div class="lb-item" id="lb-SPX"><span class="lb-sym">SPX</span><span class="lb-val flat" id="lb-SPX-v">—</span><span class="lb-pct flat" id="lb-SPX-p"></span></div>
+  </div>
+  <div class="lb-group">
+    <span class="lb-label">FX (USD)</span>
+    <div class="lb-item"><span class="lb-sym">EUR</span><span class="lb-val" id="fx-EUR">—</span></div>
+    <div class="lb-item"><span class="lb-sym">GBP</span><span class="lb-val" id="fx-GBP">—</span></div>
+    <div class="lb-item"><span class="lb-sym">JPY</span><span class="lb-val" id="fx-JPY">—</span></div>
+    <div class="lb-item"><span class="lb-sym">CHF</span><span class="lb-val" id="fx-CHF">—</span></div>
+  </div>
+  <div class="live-status">
+    <div class="live-dot loading" id="liveDot"></div>
+    <span id="liveStatusTxt">loading…</span>
+    <button class="refresh-btn" onclick="initLiveData()">↻</button>
+    <button class="export-btn" onclick="window.print()">⎙ Export</button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div class="main-header">
+  <h1>Dead Quiet — <span>SMID Alpha</span> Dashboard v2</h1>
+  <p class="sub">Personal analysis · 2026 · Not financial advice</p>
+</div>
+
+<!-- MAIN TABS -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('hype')">📈 Hype Cycle</button>
+  <button class="tab-btn" onclick="switchTab('macro')">🎛 Macro Engine</button>
+  <button class="tab-btn" onclick="switchTab('smid')">🔬 SMID Alpha</button>
+  <button class="tab-btn" onclick="switchTab('sectors')">🗺 SMID Sectors</button>
+  <button class="tab-btn" onclick="switchTab('portfolio')">💼 Portfolio</button>
+  <button class="tab-btn" onclick="switchTab('manifesto')">📝 Manifesto</button>
+  <button class="tab-btn" onclick="switchTab('setup')">🔍 Setup Score</button>
+</div>
+<div id="tooltip" class="tooltip"></div>
+
+<!-- ═══ TAB 1 — HYPE CYCLE ═══ -->
+<div class="tab-panel active" id="tab-hype">
+<div class="access-legend">
+  <div class="access-item"><div class="access-ring ring-open">✓</div> Fully public (stocks/ETF)</div>
+  <div class="access-item"><div class="access-ring ring-partial">~</div> Partial (proxy/ETF)</div>
+  <div class="access-item"><div class="access-ring ring-closed">✕</div> Closed (VC/private)</div>
+</div>
+
+<div class="chart-wrap">
+<svg viewBox="0 0 900 430" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0a18;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#080810;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="4" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="softglow"><feGaussianBlur stdDeviation="7" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect x="0" y="0" width="900" height="430" fill="url(#bg1)" rx="8"/>
+  <!-- Grid lines -->
+  <line x1="55" y1="30" x2="55" y2="390" stroke="#1a1a2e" stroke-width="1"/>
+  <line x1="55" y1="390" x2="880" y2="390" stroke="#1a1a2e" stroke-width="1"/>
+  <line x1="55" y1="100" x2="880" y2="100" stroke="#1a1a2e" stroke-width="0.5" stroke-dasharray="4,4"/>
+  <line x1="55" y1="200" x2="880" y2="200" stroke="#1a1a2e" stroke-width="0.5" stroke-dasharray="4,4"/>
+  <line x1="55" y1="300" x2="880" y2="300" stroke="#1a1a2e" stroke-width="0.5" stroke-dasharray="4,4"/>
+  <!-- Axis labels -->
+  <text x="30" y="394" fill="#44445a" font-size="9" font-family="DM Sans">LOW</text>
+  <text x="30" y="32" fill="#44445a" font-size="9" font-family="DM Sans">HIGH</text>
+  <text x="30" y="200" fill="#44445a" font-size="9" font-family="DM Sans" writing-mode="tb" transform="rotate(-90,30,200)">HYPE</text>
+  <!-- Phase labels -->
+  <text x="98" y="415" fill="#333" font-size="8.5" font-family="Syne" letter-spacing="0.08em">TRIGGER</text>
+  <text x="230" y="415" fill="#333" font-size="8.5" font-family="Syne" letter-spacing="0.08em">PEAK</text>
+  <text x="410" y="415" fill="#333" font-size="8.5" font-family="Syne" letter-spacing="0.08em">TROUGH</text>
+  <text x="580" y="415" fill="#333" font-size="8.5" font-family="Syne" letter-spacing="0.08em">SLOPE</text>
+  <text x="740" y="415" fill="#333" font-size="8.5" font-family="Syne" letter-spacing="0.08em">PLATEAU</text>
+  <!-- Phase dividers -->
+  <line x1="185" y1="30" x2="185" y2="395" stroke="#1a1a2e" stroke-width="0.5" stroke-dasharray="3,6"/>
+  <line x1="375" y1="30" x2="375" y2="395" stroke="#1a1a2e" stroke-width="0.5" stroke-dasharray="3,6"/>
+  <line x1="545" y1="30" x2="545" y2="395" stroke="#1a1a2e" stroke-width="0.5" stroke-dasharray="3,6"/>
+  <line x1="700" y1="30" x2="700" y2="395" stroke="#1a1a2e" stroke-width="0.5" stroke-dasharray="3,6"/>
+  <!-- Hype curve -->
+  <path d="M 60,370 C 80,360 100,310 130,200 C 155,110 175,50 210,44 C 245,38 255,60 280,100 C 310,145 330,190 360,240 C 390,290 410,330 430,345 C 450,358 470,355 500,340 C 530,325 555,295 580,270 C 610,242 640,220 670,210 C 700,200 730,202 760,205 C 800,210 840,218 880,222"
+    fill="none" stroke="#fbbf24" stroke-width="2.5" filter="url(#softglow)" opacity="0.7"/>
+  <path d="M 60,370 C 80,360 100,310 130,200 C 155,110 175,50 210,44 C 245,38 255,60 280,100 C 310,145 330,190 360,240 C 390,290 410,330 430,345 C 450,358 470,355 500,340 C 530,325 555,295 580,270 C 610,242 640,220 670,210 C 700,200 730,202 760,205 C 800,210 840,218 880,222"
+    fill="none" stroke="#fbbf24" stroke-width="1.5"/>
+
+  <!-- Sector dots — with live price annotations -->
+  <!-- AI Infrastructure — Peak -->
+  <circle cx="215" cy="46" r="8" fill="#60a5fa" filter="url(#glow)" opacity="0.9"/>
+  <text x="215" y="35" fill="#60a5fa" font-size="9" text-anchor="middle" font-family="Syne" font-weight="700">AI INFRA</text>
+  <text x="215" y="22" fill="#60a5fa" font-size="8" text-anchor="middle" font-family="DM Sans" opacity="0.8">POWL AAON</text>
+
+  <!-- Defence — Rising to Peak -->
+  <circle cx="175" cy="90" r="7" fill="#60a5fa" filter="url(#glow)" opacity="0.9"/>
+  <text x="155" y="84" fill="#60a5fa" font-size="8.5" text-anchor="middle" font-family="Syne" font-weight="700">DEFENCE</text>
+  <text x="155" y="97" fill="#60a5fa" font-size="7.5" text-anchor="middle" font-family="DM Sans" opacity="0.7">KTOS BWXT</text>
+
+  <!-- Uranium — Peak/Early Majority -->
+  <circle cx="265" cy="82" r="9" fill="#fbbf24" filter="url(#glow)" opacity="1"/>
+  <text x="265" y="70" fill="#fbbf24" font-size="9" text-anchor="middle" font-family="Syne" font-weight="700">URANIUM</text>
+  <text x="265" y="57" fill="#fbbf24" font-size="8" text-anchor="middle" font-family="DM Sans" opacity="0.8">NXE UUUU</text>
+
+  <!-- LNG / Midstream — Peak -->
+  <circle cx="300" cy="115" r="7" fill="#fb923c" filter="url(#glow)" opacity="0.9"/>
+  <text x="320" y="110" fill="#fb923c" font-size="8.5" font-family="Syne" font-weight="700">LNG</text>
+  <text x="320" y="122" fill="#fb923c" font-size="7.5" font-family="DM Sans" opacity="0.7">KNTK AM</text>
+
+  <!-- E&P SMID — Early Majority -->
+  <circle cx="355" cy="170" r="7" fill="#fb923c" filter="url(#glow)" opacity="0.85"/>
+  <text x="375" y="165" fill="#fb923c" font-size="8.5" font-family="Syne" font-weight="700">E&amp;P</text>
+  <text x="375" y="177" fill="#fb923c" font-size="7.5" font-family="DM Sans" opacity="0.7">NOG CIVI</text>
+
+  <!-- Silver — Rising -->
+  <circle cx="155" cy="200" r="7" fill="#c0c0dc" filter="url(#glow)" opacity="0.85"/>
+  <text x="140" y="218" fill="#c0c0dc" font-size="8.5" text-anchor="middle" font-family="Syne" font-weight="700">SILVER</text>
+  <text x="140" y="230" fill="#c0c0dc" font-size="7.5" text-anchor="middle" font-family="DM Sans" opacity="0.7">AG SVM HL</text>
+
+  <!-- Bio-AI — Rising -->
+  <circle cx="130" cy="240" r="6.5" fill="#c084fc" filter="url(#glow)" opacity="0.85"/>
+  <text x="112" y="257" fill="#c084fc" font-size="8.5" text-anchor="middle" font-family="Syne" font-weight="700">BIO-AI</text>
+  <text x="112" y="269" fill="#c084fc" font-size="7.5" text-anchor="middle" font-family="DM Sans" opacity="0.7">RXRX SDGR</text>
+
+  <!-- Gene Editing — Trough -->
+  <circle cx="435" cy="344" r="7" fill="#4ade80" filter="url(#glow)" opacity="0.85"/>
+  <text x="435" y="360" fill="#4ade80" font-size="8.5" text-anchor="middle" font-family="Syne" font-weight="700">GENE EDIT</text>
+  <text x="435" y="372" fill="#4ade80" font-size="7.5" text-anchor="middle" font-family="DM Sans" opacity="0.7">BEAM NTLA</text>
+
+  <!-- Psychedelics — Deep Trough -->
+  <circle cx="480" cy="350" r="6" fill="#f472b6" filter="url(#glow)" opacity="0.8"/>
+  <text x="480" y="368" fill="#f472b6" font-size="8.5" text-anchor="middle" font-family="Syne" font-weight="700">PSYCH</text>
+  <text x="480" y="380" fill="#f472b6" font-size="7.5" text-anchor="middle" font-family="DM Sans" opacity="0.7">MNMD CMPS</text>
+
+  <!-- MRO — Slope of Enlightenment -->
+  <circle cx="610" cy="248" r="7" fill="#2dd4bf" filter="url(#glow)" opacity="0.85"/>
+  <text x="630" y="244" fill="#2dd4bf" font-size="8.5" font-family="Syne" font-weight="700">MRO</text>
+  <text x="630" y="256" fill="#2dd4bf" font-size="7.5" font-family="DM Sans" opacity="0.7">HEI TDG</text>
+
+  <!-- Legend -->
+  <circle cx="70" cy="26" r="4" fill="#fbbf24"/>
+  <text x="78" y="30" fill="#44445a" font-size="8" font-family="DM Sans">PEAK / NEAR-PEAK</text>
+  <circle cx="220" cy="26" r="4" fill="#4ade80"/>
+  <text x="228" y="30" fill="#44445a" font-size="8" font-family="DM Sans">TROUGH OPPORTUNITY</text>
+  <circle cx="380" cy="26" r="4" fill="#60a5fa"/>
+  <text x="388" y="30" fill="#44445a" font-size="8" font-family="DM Sans">RISING</text>
+</svg>
+</div>
+
+<!-- SECTOR CARDS GRID -->
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin-top:8px;">
+
+<div class="card" style="border-left:3px solid #fbbf24;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+    <span class="card-title">⚛️ Uranium / Nuclear</span>
+    <span class="badge b-yellow">Peak</span>
+  </div>
+  <div style="font-size:0.65rem;color:var(--dim);margin-bottom:6px;">NXE · UUUU · DNN · UROY</div>
+  <div style="font-size:0.68rem;color:var(--text);line-height:1.5;margin-bottom:6px;">Double demand shock — AI data centres need 24/7 baseload. Supply structurally constrained. Utilities signing $70-80/lb contracts.</div>
+  <div style="font-size:0.63rem;color:var(--green);border-left:2px solid var(--green);padding-left:6px;">★★★ Strong Buy — 3-5 analyst coverage</div>
+</div>
+
+<div class="card" style="border-left:3px solid #60a5fa;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+    <span class="card-title">🏭 AI Infrastructure</span>
+    <span class="badge b-blue">Rising to Peak</span>
+  </div>
+  <div style="font-size:0.65rem;color:var(--dim);margin-bottom:6px;">POWL · AAON · SMCI · NVDA</div>
+  <div style="font-size:0.68rem;color:var(--text);line-height:1.5;margin-bottom:6px;">The AI buildout is physical. Power distribution, switchgear, precision cooling. Real backlogs, real margins, underestimated duration.</div>
+  <div style="font-size:0.63rem;color:var(--green);border-left:2px solid var(--green);padding-left:6px;">★★★ Strong Buy — limited analyst coverage on SMID names</div>
+</div>
+
+<div class="card" style="border-left:3px solid #60a5fa;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+    <span class="card-title">🛡 Defence SMID</span>
+    <span class="badge b-blue">Rising</span>
+  </div>
+  <div style="font-size:0.65rem;color:var(--dim);margin-bottom:6px;">KTOS · BWXT · MRCY</div>
+  <div style="font-size:0.68rem;color:var(--text);line-height:1.5;margin-bottom:6px;">European rearmament structural. KTOS: attritable drones. BWXT: only supplier of naval nuclear reactors. Contract-backed multi-year revenue.</div>
+  <div style="font-size:0.63rem;color:var(--yellow);border-left:2px solid var(--yellow);padding-left:6px;">★★☆ Buy — entry timing matters (+150% off lows)</div>
+</div>
+
+<div class="card" style="border-left:3px solid #fb923c;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+    <span class="card-title">🔥 LNG / Midstream</span>
+    <span class="badge b-orange">Peak</span>
+  </div>
+  <div style="font-size:0.65rem;color:var(--dim);margin-bottom:6px;">KNTK · AM · LNG</div>
+  <div style="font-size:0.68rem;color:var(--text);line-height:1.5;margin-bottom:6px;">Contract-backed cashflows. Europe locked into decade-long US LNG supply. Geopolitical floor is durable. Fee-based revenue.</div>
+  <div style="font-size:0.63rem;color:var(--yellow);border-left:2px solid var(--yellow);padding-left:6px;">★★☆ Buy — rate sensitivity is the key risk</div>
+</div>
+
+<div class="card" style="border-left:3px solid #fb923c;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+    <span class="card-title">🛢 Energy E&P SMID</span>
+    <span class="badge b-orange">Early Majority</span>
+  </div>
+  <div style="font-size:0.65rem;color:var(--dim);margin-bottom:6px;">NOG · CIVI · MTDR · VTLE</div>
+  <div style="font-size:0.68rem;color:var(--text);line-height:1.5;margin-bottom:6px;">Return-of-capital stories, not growth. NOG non-operator model. FCF inflection at $65+ WTI. M&A acquisition targets.</div>
+  <div style="font-size:0.63rem;color:var(--yellow);border-left:2px solid var(--yellow);padding-left:6px;">★★☆ Buy — WTI floor is the binary risk</div>
+</div>
+
+<div class="card" style="border-left:3px solid #c0c0dc;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+    <span class="card-title">🥈 Silver Miners</span>
+    <span class="badge" style="background:rgba(192,192,220,0.15);color:#c0c0dc;border:1px solid rgba(192,192,220,0.3);">Rising</span>
+  </div>
+  <div style="font-size:0.65rem;color:var(--dim);margin-bottom:6px;">AG · SVM · HL · PAAS</div>
+  <div style="font-size:0.68rem;color:var(--text);line-height:1.5;margin-bottom:6px;">Gold/silver ratio historically high (83x vs 60x avg). 5th year supply deficit. Operating leverage: 10% silver = 30%+ earnings.</div>
+  <div style="font-size:0.63rem;color:var(--yellow);border-left:2px solid var(--yellow);padding-left:6px;">★★☆ Buy — waits on gold/silver ratio compression</div>
+</div>
+
+<div class="card" style="border-left:3px solid #4ade80;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+    <span class="card-title">🧬 Gene Editing</span>
+    <span class="badge b-teal">Trough</span>
+  </div>
+  <div style="font-size:0.65rem;color:var(--dim);margin-bottom:6px;">BEAM · NTLA · ARVN · KYMR</div>
+  <div style="font-size:0.68rem;color:var(--text);line-height:1.5;margin-bottom:6px;">At/near cash value post-2021-2024 biotech destruction. Binary catalyst structure is the edge. 0.5-1% max, stop at −35%, sell 40% on spike day.</div>
+  <div style="font-size:0.63rem;color:var(--teal);border-left:2px solid var(--teal);padding-left:6px;">Selective — sizing is everything</div>
+</div>
+
+<div class="card" style="border-left:3px solid #c084fc;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+    <span class="card-title">🤖 Bio-AI Drug Discovery</span>
+    <span class="badge b-purple">Rising</span>
+  </div>
+  <div style="font-size:0.65rem;color:var(--dim);margin-bottom:6px;">RXRX · SDGR</div>
+  <div style="font-size:0.68rem;color:var(--text);line-height:1.5;margin-bottom:6px;">RXRX has Roche + Bayer partnerships. SDGR sells to every major pharma. Platform value real. 8-12 analyst coverage — market doesn't fully understand.</div>
+  <div style="font-size:0.63rem;color:var(--teal);border-left:2px solid var(--teal);padding-left:6px;">Selective — cash runway the critical variable</div>
+</div>
+
+<div class="card" style="border-left:3px solid #f472b6;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+    <span class="card-title">🍄 Psychedelics</span>
+    <span class="badge b-red">Deep Trough</span>
+  </div>
+  <div style="font-size:0.65rem;color:var(--dim);margin-bottom:6px;">MNMD · CMPS</div>
+  <div style="font-size:0.68rem;color:var(--text);line-height:1.5;margin-bottom:6px;">MDMA FDA rejection 2024 reset sentiment. Psilocybin still advancing. $20B+ TRD market. 0.5-1% position, wait for Phase III data.</div>
+  <div style="font-size:0.63rem;color:var(--dim);border-left:2px solid var(--dim);padding-left:6px;">Watch — patience required, catalyst is years away</div>
+</div>
+
+<div class="card" style="border-left:3px solid #2dd4bf;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+    <span class="card-title">✈️ Aviation MRO</span>
+    <span class="badge b-teal">Slope</span>
+  </div>
+  <div style="font-size:0.65rem;color:var(--dim);margin-bottom:6px;">HEI · TDG · AIR</div>
+  <div style="font-size:0.68rem;color:var(--text);line-height:1.5;margin-bottom:6px;">OEM backlogs 8-10 years. Older fleets fly longer. Proprietary parts + pricing power. Low hype, stable cashflows, consistent compounding.</div>
+  <div style="font-size:0.63rem;color:var(--dim);border-left:2px solid var(--dim);padding-left:6px;">Watch — not cheap, reliable quality compounder</div>
+</div>
+
+</div><!-- end grid -->
+</div><!-- end tab-hype -->
+
+<!-- ═══ TAB 2 — MACRO ENGINE ═══ -->
+<div class="tab-panel" id="tab-macro">
+
+<!-- Live macro KPIs -->
+<div class="sec-head">📡 Live Macro Readings</div>
+<div class="macro-kpi-grid" id="macroKpiGrid">
+  <div class="macro-kpi"><div class="mk-label">VIX</div><div class="mk-val" id="mk-VIX">—</div><div class="mk-pct flat" id="mkp-VIX">—</div><div class="mk-name">Fear Index</div></div>
+  <div class="macro-kpi"><div class="mk-label">10Y Yield</div><div class="mk-val" id="mk-TNX">—</div><div class="mk-pct flat" id="mkp-TNX">—</div><div class="mk-name">US Treasury</div></div>
+  <div class="macro-kpi"><div class="mk-label">WTI Crude</div><div class="mk-val" id="mk-WTI">—</div><div class="mk-pct flat" id="mkp-WTI">—</div><div class="mk-name">USD / bbl</div></div>
+  <div class="macro-kpi"><div class="mk-label">Gold</div><div class="mk-val" id="mk-GOLD">—</div><div class="mk-pct flat" id="mkp-GOLD">—</div><div class="mk-name">USD / oz</div></div>
+  <div class="macro-kpi"><div class="mk-label">S&P 500</div><div class="mk-val" id="mk-SPX">—</div><div class="mk-pct flat" id="mkp-SPX">—</div><div class="mk-name">Large Cap</div></div>
+  <div class="macro-kpi"><div class="mk-label">Russell 2K</div><div class="mk-val" id="mk-IWM">—</div><div class="mk-pct flat" id="mkp-IWM">—</div><div class="mk-name">Small Cap ETF</div></div>
+</div>
+
+<!-- FX -->
+<div class="sec-head">💱 FX Rates (1 USD =)</div>
+<div class="fx-grid">
+  <div class="fx-card"><div class="fx-pair">EUR/USD</div><div class="fx-rate" id="fxd-EUR">—</div><div class="fx-base">1 USD → EUR</div></div>
+  <div class="fx-card"><div class="fx-pair">GBP/USD</div><div class="fx-rate" id="fxd-GBP">—</div><div class="fx-base">1 USD → GBP</div></div>
+  <div class="fx-card"><div class="fx-pair">USD/JPY</div><div class="fx-rate" id="fxd-JPY">—</div><div class="fx-base">1 USD → JPY</div></div>
+  <div class="fx-card"><div class="fx-pair">USD/CHF</div><div class="fx-rate" id="fxd-CHF">—</div><div class="fx-base">1 USD → CHF</div></div>
+  <div class="fx-card"><div class="fx-pair">USD/CAD</div><div class="fx-rate" id="fxd-CAD">—</div><div class="fx-base">1 USD → CAD</div></div>
+  <div class="fx-card"><div class="fx-pair">USD/AUD</div><div class="fx-rate" id="fxd-AUD">—</div><div class="fx-base">1 USD → AUD</div></div>
+</div>
+
+<!-- REGIME SELECTOR -->
+<div class="sec-head">🎛 Regime Selector</div>
+<div class="macro-selectors">
+  <div class="macro-group"><label>Rate Environment</label>
+    <select id="mRate" onchange="updateRegime()">
+      <option value="hike">Hiking / High</option>
+      <option value="hold" selected>On Hold</option>
+      <option value="cut">Cutting</option>
+    </select>
+  </div>
+  <div class="macro-group"><label>Growth Outlook</label>
+    <select id="mGrowth" onchange="updateRegime()">
+      <option value="strong">Strong</option>
+      <option value="soft" selected>Soft Landing</option>
+      <option value="recession">Recession Fear</option>
+    </select>
+  </div>
+  <div class="macro-group"><label>Geopolitical Risk</label>
+    <select id="mGeo" onchange="updateRegime()">
+      <option value="low">Low</option>
+      <option value="medium" selected>Elevated</option>
+      <option value="high">High / War Premium</option>
+    </select>
+  </div>
+</div>
+
+<div class="regime-output" id="regimeOutput">
+  <div class="ro-title" id="regimeTitle">Select regime inputs above</div>
+  <div class="regime-chips" id="regimeChips"></div>
+  <div id="regimeDetail"></div>
+</div>
+
+<!-- MACRO SCENARIOS -->
+<div class="sec-head">📋 Macro Scenarios 2026</div>
+<div class="scenarios">
+<div class="scenario-card sc-base">
+  <div class="sc-label">Base Case (50%)</div>
+  <div class="sc-desc">Fed holds at 4.25-4.5%. Inflation sticky 2.5-3%. Growth muddles through at 1.5-2%. AI capex boom continues. Energy demand structural.</div>
+  <div class="sc-best"><strong style="color:var(--text);">Best sectors:</strong> AI Infra, Energy, Defence, Uranium</div>
+</div>
+<div class="scenario-card sc-bull">
+  <div class="sc-label">Bull Case (25%)</div>
+  <div class="sc-desc">Fed cuts 2-3x. Soft landing confirmed. SMID re-rates vs large cap. AI buildout accelerates. Nuclear renaissance gains official backing.</div>
+  <div class="sc-best"><strong style="color:var(--text);">Best sectors:</strong> Gene Editing, Bio-AI, Silver, SMID broadly</div>
+</div>
+<div class="scenario-card sc-bear">
+  <div class="sc-label">Bear Case (25%)</div>
+  <div class="sc-desc">Stagflation: inflation re-accelerates, growth stalls. Fed hikes again. Credit tightens. Speculative SMID destroyed. Cash and commodities win.</div>
+  <div class="sc-best"><strong style="color:var(--text);">Best sectors:</strong> Gold, Energy, Cash. Avoid: Bio-AI, Psych, speculative</div>
+</div>
+</div>
+
+<!-- FED × WAR MATRIX -->
+<div class="sec-head">⚔️ Fed × Geopolitical Matrix</div>
+<div style="overflow-x:auto;margin-bottom:24px;">
+<table class="tbl" style="min-width:600px;">
+<thead><tr>
+  <th></th>
+  <th>Fed Cutting</th>
+  <th>Fed On Hold</th>
+  <th>Fed Hiking</th>
+</tr></thead>
+<tbody>
+<tr>
+  <td style="color:var(--green);font-weight:700;font-size:0.7rem;">Low Geo Risk</td>
+  <td style="font-size:0.66rem;"><span style="color:var(--green);">↑ Tech, Growth, SMID</span><br><span style="color:var(--dim);font-size:0.6rem;">Risk-on. Small caps shine.</span></td>
+  <td style="font-size:0.66rem;"><span style="color:var(--yellow);">→ Quality value</span><br><span style="color:var(--dim);font-size:0.6rem;">Stock pickers market.</span></td>
+  <td style="font-size:0.66rem;"><span style="color:var(--red);">↓ Growth, Duration</span><br><span style="color:var(--dim);font-size:0.6rem;">Cash + short duration wins.</span></td>
+</tr>
+<tr>
+  <td style="color:var(--yellow);font-weight:700;font-size:0.7rem;">Elevated Geo Risk</td>
+  <td style="font-size:0.66rem;"><span style="color:var(--green);">↑ Energy, Defence, Gold</span><br><span style="color:var(--dim);font-size:0.6rem;">Current base case zone.</span></td>
+  <td style="font-size:0.66rem;"><span style="color:var(--yellow);">→ Defence, Energy, Uranium</span><br><span style="color:var(--dim);font-size:0.6rem;font-weight:700;color:var(--yellow);">← WE ARE HERE</span></td>
+  <td style="font-size:0.66rem;"><span style="color:var(--orange);">→ Commodities, Cash</span><br><span style="color:var(--dim);font-size:0.6rem;">Defensive posture.</span></td>
+</tr>
+<tr>
+  <td style="color:var(--red);font-weight:700;font-size:0.7rem;">High Geo Risk</td>
+  <td style="font-size:0.66rem;"><span style="color:var(--orange);">↑ Hard assets only</span><br><span style="color:var(--dim);font-size:0.6rem;">Gold, Energy, Defence max.</span></td>
+  <td style="font-size:0.66rem;"><span style="color:var(--orange);">↑ Defence, Uranium, Gold</span><br><span style="color:var(--dim);font-size:0.6rem;">SMID Defence premium.</span></td>
+  <td style="font-size:0.66rem;"><span style="color:var(--red);">↓ Almost everything</span><br><span style="color:var(--dim);font-size:0.6rem;">Stagflation. Very hard.</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+
+</div><!-- end tab-macro -->
+
+<!-- ═══ TAB 3 — SMID ALPHA ═══ -->
+<div class="tab-panel" id="tab-smid">
+
+<div class="sub-tabs">
+  <button class="sub-tab active" onclick="switchSub('smid','overview')">📊 Master Table</button>
+  <button class="sub-tab" onclick="switchSub('smid','movers')">🚀 Price Movers</button>
+  <button class="sub-tab" onclick="switchSub('smid','catalyst')">📅 Catalyst Calendar</button>
+  <button class="sub-tab" onclick="switchSub('smid','edge')">🎯 Edge Framework</button>
+</div>
+
+<!-- SUB: MASTER TABLE -->
+<div class="sub-panel active" id="smid-overview">
+<div class="data-warn">⚠ Prices live from Yahoo Finance via CORS proxy. Fundamentals (float, SI, runway) are manually maintained — update periodically.</div>
+<div class="tbl-controls">
+  <input class="tbl-search" id="smidSearch" placeholder="Search ticker or name…" oninput="filterSmidTable()">
+  <button class="filter-btn active" onclick="smidFilter(this,'all')">All</button>
+  <button class="filter-btn" onclick="smidFilter(this,'uranium')">⚛️ Uranium</button>
+  <button class="filter-btn" onclick="smidFilter(this,'energy')">⚡ Energy</button>
+  <button class="filter-btn" onclick="smidFilter(this,'aiinfra')">🏭 AI Infra</button>
+  <button class="filter-btn" onclick="smidFilter(this,'bio')">🧬 Bio</button>
+  <button class="filter-btn" onclick="smidFilter(this,'defence')">🛡 Defence</button>
+</div>
+<div class="smid-table-wrap">
+<table class="smid-tbl" id="smidTable">
+<thead><tr>
+  <th onclick="sortSmid(0)">Ticker</th>
+  <th onclick="sortSmid(1)">Name</th>
+  <th onclick="sortSmid(2)">Sector</th>
+  <th onclick="sortSmid(3)">Price</th>
+  <th onclick="sortSmid(4)">Chg%</th>
+  <th onclick="sortSmid(5)">Cap</th>
+  <th onclick="sortSmid(6)">Float</th>
+  <th onclick="sortSmid(7)">Analysts</th>
+  <th onclick="sortSmid(8)">Conviction</th>
+  <th onclick="sortSmid(9)">Action</th>
+  <th>Next Catalyst</th>
+</tr></thead>
+<tbody id="smidTbody">
+<!-- Rows injected by JS -->
+</tbody>
+</table>
+</div>
+</div><!-- end smid-overview -->
+
+<!-- SUB: MOVERS -->
+<div class="sub-panel" id="smid-movers">
+<div class="sec-head">🚀 Key Price Mover Analysis</div>
+<div class="mover-grid">
+
+<div class="mover-card" onclick="this.classList.toggle('expanded')">
+  <div class="mover-header">
+    <div><div class="mover-ticker">POWL</div><div class="mover-name">Powell Industries</div></div>
+    <span class="tag tag-aiinfra">AI INFRA</span>
+    <div style="margin-left:auto;text-align:right;"><div class="lb-val pos" id="mp-POWL">—</div><div class="lb-pct pos" id="mc-POWL">—</div></div>
+  </div>
+  <div class="mover-preview"><strong>Trigger:</strong> Data centre switchgear backlog expansion</div>
+  <div class="mover-body">
+    <ul class="driver-list">
+      <li class="driver-item"><span class="driver-rank rank-1">1</span><div class="driver-text">Hyperscaler capex surge — MSFT/GOOG/AMZN all guiding 30-40% higher datacenter spend YoY<em> — multi-quarter tailwind</em></div><span class="driver-move move-pos">+15-40%</span></li>
+      <li class="driver-item"><span class="driver-rank rank-2">2</span><div class="driver-text">Switchgear lead times extend to 18-24 months — POWL taking orders now for 2026-27 delivery<em> — order book visibility</em></div><span class="driver-move move-pos">+10-20%</span></li>
+      <li class="driver-item"><span class="driver-rank rank-3">3</span><div class="driver-text">Earnings beat + backlog guidance upgrade on quarterly print<em> — 3-5 analyst coverage = outsized reaction</em></div><span class="driver-move move-both">±20-35%</span></li>
+    </ul>
+    <div class="catalyst-next"><div class="cat-label">Next Catalyst</div><div class="cat-event">Quarterly earnings + backlog update</div><div style="font-size:0.63rem;color:var(--blue);">Every ~90 days</div><div style="font-size:0.63rem;color:var(--green);margin-top:3px;">Bull: Backlog +20%+, margin expansion → +25-40%</div><div style="font-size:0.63rem;color:var(--red);">Bear: Guidance cut, capacity constraints → -20-30%</div></div>
+  </div>
+</div>
+
+<div class="mover-card" onclick="this.classList.toggle('expanded')">
+  <div class="mover-header">
+    <div><div class="mover-ticker">NXE</div><div class="mover-name">NexGen Energy</div></div>
+    <span class="tag tag-uranium">URANIUM</span>
+    <div style="margin-left:auto;text-align:right;"><div class="lb-val pos" id="mp-NXE">—</div><div class="lb-pct pos" id="mc-NXE">—</div></div>
+  </div>
+  <div class="mover-preview"><strong>Trigger:</strong> Rook I permitting decision (NRC)</div>
+  <div class="mover-body">
+    <ul class="driver-list">
+      <li class="driver-item"><span class="driver-rank rank-1">1</span><div class="driver-text">NRC/CNSC final construction permit — binary event. Rook I is world-class deposit (Arrow Zone 4.6% avg grade)<em> — binary 50-150% range</em></div><span class="driver-move move-both">±50-150%</span></li>
+      <li class="driver-item"><span class="driver-rank rank-2">2</span><div class="driver-text">Uranium spot price — utility contract wave driving $70-85/lb. Data centre nuclear announcements as catalysts<em> — correlated move</em></div><span class="driver-move move-pos">+10-30%</span></li>
+      <li class="driver-item"><span class="driver-rank rank-3">3</span><div class="driver-text">Strategic acquisition — NXE's Arrow deposit makes it an ideal target for major utilities or sovereign wealth funds<em> — M&A premium</em></div><span class="driver-move move-pos">+30-80%</span></li>
+    </ul>
+    <div class="catalyst-next"><div class="cat-label">Next Catalyst</div><div class="cat-event">NRC Construction Decision (Rook I)</div><div style="font-size:0.63rem;color:var(--blue);">Expected 2025-2026</div><div style="font-size:0.63rem;color:var(--green);margin-top:3px;">Bull: Approval → +80-150%</div><div style="font-size:0.63rem;color:var(--red);">Bear: Delay/denial → -30-50%</div></div>
+  </div>
+</div>
+
+<div class="mover-card" onclick="this.classList.toggle('expanded')">
+  <div class="mover-header">
+    <div><div class="mover-ticker">KTOS</div><div class="mover-name">Kratos Defense</div></div>
+    <span class="tag tag-defense">DEFENCE</span>
+    <div style="margin-left:auto;text-align:right;"><div class="lb-val pos" id="mp-KTOS">—</div><div class="lb-pct pos" id="mc-KTOS">—</div></div>
+  </div>
+  <div class="mover-preview"><strong>Trigger:</strong> Valkyrie drone production contract award</div>
+  <div class="mover-body">
+    <ul class="driver-list">
+      <li class="driver-item"><span class="driver-rank rank-1">1</span><div class="driver-text">XQ-58A Valkyrie full-rate production contract — DoD shift to attritable drone doctrine. KTOS only low-cost option at scale<em> — contract could be $500M-2B</em></div><span class="driver-move move-pos">+40-100%</span></li>
+      <li class="driver-item"><span class="driver-rank rank-2">2</span><div class="driver-text">Ukraine/Taiwan scenario escalation — drives accelerated US drone procurement, emergency supplementals<em> — geopolitical beta</em></div><span class="driver-move move-pos">+20-50%</span></li>
+      <li class="driver-item"><span class="driver-rank rank-3">3</span><div class="driver-text">Earnings beat on drone + satellite segments. Margin expansion as production scales<em> — 8-10 analysts, modest coverage</em></div><span class="driver-move move-both">±15-25%</span></li>
+    </ul>
+    <div class="catalyst-next"><div class="cat-label">Next Catalyst</div><div class="cat-event">DoD drone contract awards</div><div style="font-size:0.63rem;color:var(--blue);">Ongoing / quarterly budget cycles</div><div style="font-size:0.63rem;color:var(--green);margin-top:3px;">Bull: Major Valkyrie production contract → +50-100%</div><div style="font-size:0.63rem;color:var(--red);">Bear: Budget sequester, program delay → -25-40%</div></div>
+  </div>
+</div>
+
+<div class="mover-card" onclick="this.classList.toggle('expanded')">
+  <div class="mover-header">
+    <div><div class="mover-ticker">BEAM</div><div class="mover-name">Beam Therapeutics</div></div>
+    <span class="tag tag-bioai">GENE EDIT</span>
+    <div style="margin-left:auto;text-align:right;"><div class="lb-val pos" id="mp-BEAM">—</div><div class="lb-pct pos" id="mc-BEAM">—</div></div>
+  </div>
+  <div class="mover-preview"><strong>Trigger:</strong> ESCAPE trial interim data readout</div>
+  <div class="mover-body">
+    <ul class="driver-list">
+      <li class="driver-item"><span class="driver-rank rank-1">1</span><div class="driver-text">ESCAPE Phase I/II interim: base editing for sickle cell. If haematological response confirmed, platform validation event<em> — binary outcome</em></div><span class="driver-move move-both">+100-200% / -50-70%</span></li>
+      <li class="driver-item"><span class="driver-rank rank-2">2</span><div class="driver-text">Big pharma licensing: base editing IP is novel. Any deal (Pfizer, Novartis, Roche) validates platform at 2-5x revenue multiple<em> — deal premium</em></div><span class="driver-move move-pos">+50-150%</span></li>
+      <li class="driver-item"><span class="driver-rank rank-3">3</span><div class="driver-text">Cash runway: ~$800M as of last report. Loss-making. Runway check is risk management, not upside<em> — must monitor quarterly</em></div><span class="driver-move move-neg">-30-60%</span></li>
+    </ul>
+    <div class="catalyst-next"><div class="cat-label">Next Catalyst</div><div class="cat-event">ESCAPE trial interim data</div><div style="font-size:0.63rem;color:var(--blue);">H1 2026 expected</div><div style="font-size:0.63rem;color:var(--green);margin-top:3px;">Bull: Strong response data → +100-200%</div><div style="font-size:0.63rem;color:var(--red);">Bear: Safety signal or no response → -50-70%</div></div>
+  </div>
+</div>
+
+</div><!-- end mover-grid -->
+</div><!-- end smid-movers -->
+
+<!-- SUB: CATALYST CALENDAR -->
+<div class="sub-panel" id="smid-catalyst">
+<div class="sec-head">📅 Catalyst Calendar 2026</div>
+<div style="overflow-x:auto;margin-bottom:24px;">
+<table class="tbl" style="min-width:700px;">
+<thead><tr>
+  <th>Timing</th><th>Ticker</th><th>Event</th><th>Type</th><th>Bull Outcome</th><th>Bear Outcome</th><th>Size Est.</th>
+</tr></thead>
+<tbody>
+<tr><td><span class="badge b-red">NOW</span></td><td style="font-family:'Syne',sans-serif;font-weight:700;">POWL</td><td>Q2 FY2026 Earnings + Backlog</td><td><span style="color:var(--blue);font-size:0.63rem;font-weight:700;">EARN</span></td><td style="color:var(--green);font-size:0.63rem;">Backlog +15%+ → +20-35%</td><td style="color:var(--red);font-size:0.63rem;">Guidance miss → -15-25%</td><td style="font-size:0.63rem;color:var(--yellow);">±20-35%</td></tr>
+<tr><td><span class="badge b-red">NOW</span></td><td style="font-family:'Syne',sans-serif;font-weight:700;">NXE</td><td>NRC Rook I Permitting Update</td><td><span style="color:var(--orange);font-size:0.63rem;font-weight:700;">REG</span></td><td style="color:var(--green);font-size:0.63rem;">Approval → +80-150%</td><td style="color:var(--red);font-size:0.63rem;">Delay → -20-35%</td><td style="font-size:0.63rem;color:var(--yellow);">±50-150%</td></tr>
+<tr><td><span class="badge b-yellow">Q2 2026</span></td><td style="font-family:'Syne',sans-serif;font-weight:700;">BEAM</td><td>ESCAPE Phase I/II Interim Data</td><td><span style="color:var(--purple);font-size:0.63rem;font-weight:700;">DATA</span></td><td style="color:var(--green);font-size:0.63rem;">Response confirmed → +100-200%</td><td style="color:var(--red);font-size:0.63rem;">Safety signal → -50-70%</td><td style="font-size:0.63rem;color:var(--red);">±100%+</td></tr>
+<tr><td><span class="badge b-yellow">Q2 2026</span></td><td style="font-family:'Syne',sans-serif;font-weight:700;">KTOS</td><td>DoD Valkyrie Contract Decision</td><td><span style="color:var(--green);font-size:0.63rem;font-weight:700;">M&A</span></td><td style="color:var(--green);font-size:0.63rem;">Full rate production → +50-100%</td><td style="color:var(--red);font-size:0.63rem;">Program delay → -20-30%</td><td style="font-size:0.63rem;color:var(--yellow);">±40-100%</td></tr>
+<tr><td><span class="badge b-blue">Q3 2026</span></td><td style="font-family:'Syne',sans-serif;font-weight:700;">NTLA</td><td>NTLA-2001 Phase I Update</td><td><span style="color:var(--purple);font-size:0.63rem;font-weight:700;">DATA</span></td><td style="color:var(--green);font-size:0.63rem;">TTR reduction maintained → +60-120%</td><td style="color:var(--red);font-size:0.63rem;">Safety concern → -40-60%</td><td style="font-size:0.63rem;color:var(--red);">±60-120%</td></tr>
+<tr><td><span class="badge b-blue">Q3 2026</span></td><td style="font-family:'Syne',sans-serif;font-weight:700;">MNMD</td><td>MM120 Phase III Interim Data</td><td><span style="color:var(--purple);font-size:0.63rem;font-weight:700;">DATA</span></td><td style="color:var(--green);font-size:0.63rem;">Efficacy signal → +80-150%</td><td style="color:var(--red);font-size:0.63rem;">Miss like MDMA → -50-70%</td><td style="font-size:0.63rem;color:var(--red);">±80%+</td></tr>
+<tr><td><span class="badge b-green">Q4 2026</span></td><td style="font-family:'Syne',sans-serif;font-weight:700;">NOG</td><td>Acquisition + Buyback Announce</td><td><span style="color:var(--teal);font-size:0.63rem;font-weight:700;">CORP</span></td><td style="color:var(--green);font-size:0.63rem;">Accretive deal + buyback → +15-25%</td><td style="color:var(--red);font-size:0.63rem;">Dilutive deal → -10-15%</td><td style="font-size:0.63rem;color:var(--yellow);">±15-25%</td></tr>
+<tr><td><span class="badge" style="background:rgba(192,132,252,0.15);color:var(--purple);">WATCH</span></td><td style="font-family:'Syne',sans-serif;font-weight:700;">UUUU</td><td>White Mesa Mill Expansion</td><td><span style="color:var(--orange);font-size:0.63rem;font-weight:700;">OPS</span></td><td style="color:var(--green);font-size:0.63rem;">Capacity online → +20-40%</td><td style="color:var(--red);font-size:0.63rem;">Delay → -10-15%</td><td style="font-size:0.63rem;color:var(--yellow);">±20-40%</td></tr>
+</tbody>
+</table>
+</div>
+</div><!-- end smid-catalyst -->
+
+<!-- SUB: EDGE FRAMEWORK -->
+<div class="sub-panel" id="smid-edge">
+<div class="sec-head">🎯 Dead Quiet Edge Framework</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px;">
+  <div class="card"><div class="card-title" style="color:var(--yellow);">📖 Narrative</div>
+    <div style="font-size:0.68rem;color:var(--text);line-height:1.7;">
+      <div style="padding:4px 0;border-bottom:1px solid var(--border);">✓ <strong>One sentence</strong> — clear, specific, non-consensus</div>
+      <div style="padding:4px 0;border-bottom:1px solid var(--border);">✓ <strong>Not mainstream</strong> — no CNBC breakout, no Bloomberg Alert</div>
+      <div style="padding:4px 0;">✓ <strong>Expanding</strong> — fundamentals growing, not shrinking</div>
+    </div>
+  </div>
+  <div class="card"><div class="card-title" style="color:var(--orange);">⚡ Catalyst</div>
+    <div style="font-size:0.68rem;color:var(--text);line-height:1.7;">
+      <div style="padding:4px 0;border-bottom:1px solid var(--border);">✓ <strong>Dated</strong> — within 60 days, not "sometime this year"</div>
+      <div style="padding:4px 0;border-bottom:1px solid var(--border);">✓ <strong>Binary</strong> — pass/fail, yes/no, contract/no contract</div>
+      <div style="padding:4px 0;">✓ <strong>Underpriced</strong> — market not pricing full probability</div>
+    </div>
+  </div>
+  <div class="card"><div class="card-title" style="color:var(--teal);">🌊 Float</div>
+    <div style="font-size:0.68rem;color:var(--text);line-height:1.7;">
+      <div style="padding:4px 0;border-bottom:1px solid var(--border);">✓ <strong>Under 30M shares</strong> — small order moves the price</div>
+      <div style="padding:4px 0;border-bottom:1px solid var(--border);">✓ <strong>2 analysts or fewer</strong> — Goldman not watching</div>
+      <div style="padding:4px 0;">✓ <strong>Institutional &lt;40%</strong> — retail vacuum available</div>
+    </div>
+  </div>
+  <div class="card"><div class="card-title" style="color:var(--purple);">🔇 Vacuum</div>
+    <div style="font-size:0.68rem;color:var(--text);line-height:1.7;">
+      <div style="padding:4px 0;border-bottom:1px solid var(--border);">✓ <strong>No Bloomberg Alert</strong> — last 30 days clean</div>
+      <div style="padding:4px 0;border-bottom:1px solid var(--border);">✓ <strong>Volume below avg</strong> — crowd not here yet</div>
+      <div style="padding:4px 0;">✓ <strong>Price not reacted</strong> — catalyst not priced in</div>
+    </div>
+  </div>
+</div>
+<div class="smid-box">
+  <strong>Position sizing rules:</strong> Speculative (binary clinical): 0.5-1% max. Stop at −35%. Sell 40% on spike day. SMID with earnings catalyst: 2-4%. Sector with structural thesis: 5-8%. Never hold through secondary offering.
+</div>
+<div class="smid-box blue">
+  <strong>Exit discipline:</strong> Set price targets before entry, not after. When the narrative becomes consensus (Bloomberg alert, CNBC segment, Reddit front page) — you are already late. Position size down on the way up, not down.
+</div>
+</div><!-- end smid-edge -->
+
+</div><!-- end tab-smid -->
+
+<!-- ═══ TAB 4 — SMID SECTORS ═══ -->
+<div class="tab-panel" id="tab-sectors">
+
+<div class="sec-head">📊 Sector Scoring</div>
+<div style="overflow-x:auto;margin-bottom:24px;">
+<table class="tbl" style="min-width:700px;">
+<thead><tr>
+  <th>Sector</th><th>Hype Position</th><th>Macro Fit</th><th>SMID Edge</th><th>Overall</th><th>Key Names</th><th>Watchlist Prices</th>
+</tr></thead>
+<tbody>
+<tr><td style="font-weight:700;color:#fff;">⚛️ Uranium/Nuclear</td><td><span class="badge b-yellow">Peak</span></td><td><span style="color:var(--green);">★★★</span></td><td><span style="color:var(--green);">★★★</span></td><td><span class="badge b-green">Strong Buy</span></td><td style="color:var(--dim);">NXE, UUUU, DNN</td><td><span id="sx-NXE" style="font-size:0.63rem;color:var(--dim);">—</span></td></tr>
+<tr><td style="font-weight:700;color:#fff;">🏭 AI Infrastructure</td><td><span class="badge b-blue">Rising to Peak</span></td><td><span style="color:var(--green);">★★★</span></td><td><span style="color:var(--green);">★★★</span></td><td><span class="badge b-green">Strong Buy</span></td><td style="color:var(--dim);">POWL, AAON</td><td><span id="sx-POWL" style="font-size:0.63rem;color:var(--dim);">—</span></td></tr>
+<tr><td style="font-weight:700;color:#fff;">🛡 Defence SMID</td><td><span class="badge b-blue">Rising</span></td><td><span style="color:var(--green);">★★★</span></td><td><span style="color:var(--yellow);">★★☆</span></td><td><span class="badge b-yellow">Buy</span></td><td style="color:var(--dim);">KTOS, BWXT</td><td><span id="sx-KTOS" style="font-size:0.63rem;color:var(--dim);">—</span></td></tr>
+<tr><td style="font-weight:700;color:#fff;">🔥 LNG/Midstream</td><td><span class="badge b-orange">Peak</span></td><td><span style="color:var(--green);">★★★</span></td><td><span style="color:var(--yellow);">★★☆</span></td><td><span class="badge b-yellow">Buy</span></td><td style="color:var(--dim);">KNTK, AM</td><td><span id="sx-KNTK" style="font-size:0.63rem;color:var(--dim);">—</span></td></tr>
+<tr><td style="font-weight:700;color:#fff;">🛢 Energy E&P SMID</td><td><span class="badge b-orange">Early Majority</span></td><td><span style="color:var(--yellow);">★★☆</span></td><td><span style="color:var(--green);">★★★</span></td><td><span class="badge b-yellow">Buy</span></td><td style="color:var(--dim);">NOG, CIVI, MTDR</td><td><span id="sx-NOG" style="font-size:0.63rem;color:var(--dim);">—</span></td></tr>
+<tr><td style="font-weight:700;color:#fff;">🥈 Silver Miners</td><td><span class="badge" style="background:rgba(192,192,220,0.15);color:#c0c0dc;">Rising</span></td><td><span style="color:var(--yellow);">★★☆</span></td><td><span style="color:var(--green);">★★★</span></td><td><span class="badge b-yellow">Buy</span></td><td style="color:var(--dim);">AG, SVM, HL</td><td><span id="sx-AG" style="font-size:0.63rem;color:var(--dim);">—</span></td></tr>
+<tr><td style="font-weight:700;color:#fff;">🧬 Gene Editing</td><td><span class="badge b-teal">Trough</span></td><td><span style="color:var(--dim);">★☆☆</span></td><td><span style="color:var(--green);">★★★</span></td><td><span class="badge b-teal">Selective</span></td><td style="color:var(--dim);">BEAM, NTLA</td><td><span id="sx-BEAM" style="font-size:0.63rem;color:var(--dim);">—</span></td></tr>
+<tr><td style="font-weight:700;color:#fff;">🤖 Bio-AI</td><td><span class="badge b-purple">Rising</span></td><td><span style="color:var(--yellow);">★★☆</span></td><td><span style="color:var(--green);">★★★</span></td><td><span class="badge b-teal">Selective</span></td><td style="color:var(--dim);">RXRX, SDGR</td><td><span id="sx-RXRX" style="font-size:0.63rem;color:var(--dim);">—</span></td></tr>
+<tr><td style="font-weight:700;color:#fff;">🍄 Psychedelics</td><td><span class="badge b-red">Deep Trough</span></td><td><span style="color:var(--dim);">★☆☆</span></td><td><span style="color:var(--yellow);">★★☆</span></td><td><span class="badge" style="background:rgba(100,100,120,0.15);color:var(--dim);">Watch</span></td><td style="color:var(--dim);">MNMD, CMPS</td><td><span id="sx-MNMD" style="font-size:0.63rem;color:var(--dim);">—</span></td></tr>
+<tr><td style="font-weight:700;color:#fff;">✈️ Aviation MRO</td><td><span class="badge b-teal">Slope</span></td><td><span style="color:var(--yellow);">★★☆</span></td><td><span style="color:var(--dim);">★☆☆</span></td><td><span class="badge" style="background:rgba(100,100,120,0.15);color:var(--dim);">Watch</span></td><td style="color:var(--dim);">HEI, TDG</td><td><span id="sx-HEI" style="font-size:0.63rem;color:var(--dim);">—</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- SECTOR SUB-TABS -->
+<div class="sub-tabs" id="sectorTabs">
+  <button class="sub-tab active" onclick="switchSector('uranium')">⚛️ Uranium</button>
+  <button class="sub-tab" onclick="switchSector('aiinfra')">🏭 AI Infra</button>
+  <button class="sub-tab" onclick="switchSector('lng')">🔥 LNG</button>
+  <button class="sub-tab" onclick="switchSector('ep')">🛢 E&P</button>
+  <button class="sub-tab" onclick="switchSector('defence')">🛡 Defence</button>
+  <button class="sub-tab" onclick="switchSector('silver')">🥈 Silver</button>
+  <button class="sub-tab" onclick="switchSector('geneedit')">🧬 Gene Edit</button>
+  <button class="sub-tab" onclick="switchSector('bioai')">🤖 Bio-AI</button>
+  <button class="sub-tab" onclick="switchSector('psych')">🍄 Psych</button>
+  <button class="sub-tab" onclick="switchSector('mro')">✈️ MRO</button>
+</div>
+
+<!-- URANIUM -->
+<div class="sub-panel active" id="sec-uranium">
+  <div class="smid-box"><strong>Thesis:</strong> Double demand shock — AI data centres need 24/7 baseload, only nuclear delivers without carbon. Supply structurally constrained: new mines take 10-15 years. Utilities signing long-term contracts at $70-80/lb. SMID edge: NXE and UUUU have 3-5 analyst coverage and binary catalysts.</div>
+  <div class="smid-box blue"><strong>Key catalysts:</strong> Kazatomprom production guidance · US utility contract announcements · NRC/DOE permitting decisions · Uranium spot price crossing $100/lb · Data centre nuclear PPA announcement.</div>
+  <div class="smid-box red"><strong>Risk:</strong> Permitting delays (Rook I) · Kazakhstan political instability · SMR timelines pushed past 2035 · Spot price correction on China demand slowdown.</div>
+  <table class="tbl"><thead><tr><th>Name</th><th>Ticker</th><th>Price</th><th>Chg%</th><th>Type</th><th>Mkt Cap</th><th>Key Catalyst</th></tr></thead>
+  <tbody>
+  <tr><td style="color:#fff;font-weight:600;">NexGen Energy</td><td><span class="tag tag-uranium">NXE</span></td><td id="sp-NXE">—</td><td id="sc-NXE">—</td><td>Pure Play</td><td>~$3B</td><td>Rook I permitting</td></tr>
+  <tr><td style="color:#fff;font-weight:600;">Energy Fuels</td><td><span class="tag tag-uranium">UUUU</span></td><td id="sp-UUUU">—</td><td id="sc-UUUU">—</td><td>Pure Play</td><td>~$800M</td><td>White Mesa expansion</td></tr>
+  <tr><td style="color:#fff;font-weight:600;">Denison Mines</td><td><span class="tag tag-uranium">DNN</span></td><td id="sp-DNN">—</td><td id="sc-DNN">—</td><td>Pure Play</td><td>~$1B</td><td>Wheeler River ISR</td></tr>
+  <tr><td style="color:#fff;font-weight:600;">Uranium Royalty</td><td><span class="tag tag-uranium">UROY</span></td><td id="sp-UROY">—</td><td id="sc-UROY">—</td><td>Royalty</td><td>~$200M</td><td>Royalty activation</td></tr>
+  </tbody></table>
+</div>
+
+<!-- AI INFRA -->
+<div class="sub-panel" id="sec-aiinfra">
+  <div class="smid-box"><strong>Thesis:</strong> AI buildout is physical infrastructure — power distribution, thermal management, switchgear. POWL builds switchgear for data centres; AAON builds precision cooling. 3-5 analyst coverage. Real backlogs, real margins. Market underestimates duration of buildout.</div>
+  <div class="smid-box blue"><strong>Key catalysts:</strong> Quarterly earnings with backlog guidance · Hyperscaler capex (MSFT, GOOG, AMZN, META) · Power grid upgrade bills · New data centre campus announcements.</div>
+  <div class="smid-box red"><strong>Risk:</strong> Hyperscaler capex cut · AI adoption slower than expected · Competition from Eaton, ABB · Valuation multiple compression after run.</div>
+  <table class="tbl"><thead><tr><th>Name</th><th>Ticker</th><th>Price</th><th>Chg%</th><th>Type</th><th>Mkt Cap</th><th>Key Catalyst</th></tr></thead>
+  <tbody>
+  <tr><td style="color:#fff;font-weight:600;">Powell Industries</td><td><span class="tag tag-aiinfra">POWL</span></td><td id="sp-POWL">—</td><td id="sc-POWL">—</td><td>Switchgear</td><td>~$3B</td><td>Q backlog guide</td></tr>
+  <tr><td style="color:#fff;font-weight:600;">AAON Inc.</td><td><span class="tag tag-aiinfra">AAON</span></td><td id="sp-AAON">—</td><td id="sc-AAON">—</td><td>HVAC/Cooling</td><td>~$5B</td><td>DataCenter revenue</td></tr>
+  <tr><td style="color:#fff;font-weight:600;">Super Micro Computer</td><td><span class="tag tag-aiinfra">SMCI</span></td><td id="sp-SMCI">—</td><td id="sc-SMCI">—</td><td>Servers</td><td>~$25B</td><td>Annual filings</td></tr>
+  <tr><td style="color:#fff;font-weight:600;">NVIDIA Corp.</td><td><span class="tag tag-aiinfra">NVDA</span></td><td id="sp-NVDA">—</td><td id="sc-NVDA">—</td><td>GPU/Compute</td><td>~$3T</td><td>Revenue guide</td></tr>
+  </tbody></table>
+</div>
+
+<!-- Other sectors abbreviated for space but with same structure -->
+<div class="sub-panel" id="sec-lng">
+  <div class="smid-box"><strong>Thesis:</strong> Contract-backed cashflows independent of spot LNG price. Europe locked for decade-long US LNG. KNTK has limited analyst coverage and fee-based revenue. Geopolitical floor durable.</div>
+  <div class="smid-box blue"><strong>Catalysts:</strong> European LNG terminal completions · US LNG export capacity additions · NatGas floor >$2.50/MMBtu · Russia/Ukraine resolution.</div>
+  <div class="smid-box red"><strong>Risk:</strong> LNG oversupply post-2026 · Warm European winter · Rate sensitivity · Cheniere contract renegotiation.</div>
+  <table class="tbl"><thead><tr><th>Name</th><th>Ticker</th><th>Price</th><th>Chg%</th><th>Type</th><th>Mkt Cap</th><th>Key Catalyst</th></tr></thead>
+  <tbody>
+  <tr><td style="color:#fff;font-weight:600;">Kinetik Holdings</td><td><span class="tag tag-energy">KNTK</span></td><td id="sp-KNTK">—</td><td id="sc-KNTK">—</td><td>Midstream</td><td>~$6B</td><td>Permian volume expansion</td></tr>
+  <tr><td style="color:#fff;font-weight:600;">Antero Midstream</td><td><span class="tag tag-energy">AM</span></td><td id="sp-AM">—</td><td id="sc-AM">—</td><td>Midstream</td><td>~$6B</td><td>FCF + dividend growth</td></tr>
+  <tr><td style="color:#fff;font-weight:600;">Cheniere Energy</td><td><span class="tag tag-energy">LNG</span></td><td id="sp-LNG">—</td><td id="sc-LNG">—</td><td>LNG Export</td><td>~$42B</td><td>Contract backlog</td></tr>
+  </tbody></table>
+</div>
+
+<div class="sub-panel" id="sec-ep">
+  <div class="smid-box"><strong>Thesis:</strong> Return-of-capital stories. NOG non-operator model. CIVI/MTDR pure Permian/DJ Basin FCF at $65+ WTI. M&A targets for majors.</div>
+  <div class="smid-box blue"><strong>Catalysts:</strong> WTI >$65 sustained · Quarterly FCF/buyback · Permian M&A activity · OPEC+ discipline.</div>
+  <div class="smid-box red"><strong>Risk:</strong> WTI <$60 sustained · OPEC+ surge · Demand destruction · Permian cost inflation.</div>
+  <table class="tbl"><thead><tr><th>Name</th><th>Ticker</th><th>Price</th><th>Chg%</th><th>Type</th><th>Mkt Cap</th><th>Key Catalyst</th></tr></thead>
+  <tbody>
+  <tr><td style="color:#fff;font-weight:600;">Northern Oil &amp; Gas</td><td><span class="tag tag-energy">NOG</span></td><td id="sp-NOG">—</td><td id="sc-NOG">—</td><td>Non-Op</td><td>~$4B</td><td>Acquisition + buyback</td></tr>
+  <tr><td style="color:#fff;font-weight:600;">Civitas Resources</td><td><span class="tag tag-energy">CIVI</span></td><td id="sp-CIVI">—</td><td id="sc-CIVI">—</td><td>DJ + Permian</td><td>~$5B</td><td>FCF yield + buyback</td></tr>
+  <tr><td style="color:#fff;font-weight:600;">Matador Resources</td><td><span class="tag tag-energy">MTDR</span></td><td id="sp-MTDR">—</td><td id="sc-MTDR">—</td><td>Permian</td><td>~$6B</td><td>Delaware Basin prod.</td></tr>
+  <tr><td style="color:#fff;font-weight:600;">Vital Energy</td><td><span class="tag tag-energy">VTLE</span></td><td id="sp-VTLE">—</td><td id="sc-VTLE">—</td><td>Permian</td><td>~$1.5B</td><td>Debt reduction</td></tr>
+  </tbody></table>
+</div>
+
+<div class="sub-panel" id="sec-defence">
+  <div class="smid-box"><strong>Thesis:</strong> European budgets doubling. US backlog at record. KTOS builds low-cost attritable drones. BWXT makes naval nuclear reactors — only supplier, no competition. Contract-backed multi-year revenue.</div>
+  <div class="smid-box blue"><strong>Catalysts:</strong> US defence budget · European rearmament · Drone warfare expansion · KTOS Valkyrie contract · BWXT reactor extensions.</div>
+  <div class="smid-box red"><strong>Risk:</strong> Geopolitical resolution · US debt ceiling cuts · Some names +150% off lows · Procurement delays.</div>
+  <table class="tbl"><thead><tr><th>Name</th><th>Ticker</th><th>Price</th><th>Chg%</th><th>Type</th><th>Mkt Cap</th><th>Key Catalyst</th></tr></thead>
+  <tbody>
+  <tr><td style="color:#fff;font-weight:600;">Kratos Defense</td><td><span class="tag tag-defense">KTOS</span></td><td id="sp-KTOS">—</td><td id="sc-KTOS">—</td><td>Drones</td><td>~$4B</td><td>Valkyrie contract</td></tr>
+  <tr><td style="color:#fff;font-weight:600;">BWX Technologies</td><td><span class="tag tag-defense">BWXT</span></td><td id="sp-BWXT">—</td><td id="sc-BWXT">—</td><td>Naval Nuclear</td><td>~$8B</td><td>Sub programme</td></tr>
+  <tr><td style="color:#fff;font-weight:600;">Mercury Systems</td><td><span class="tag tag-defense">MRCY</span></td><td id="sp-MRCY">—</td><td id="sc-MRCY">—</td><td>Electronics</td><td>~$1.5B</td><td>Margin recovery</td></tr>
+  </tbody></table>
+</div>
+
+<div class="sub-panel" id="sec-silver">
+  <div class="smid-box"><strong>Thesis:</strong> Gold/silver ratio historically high (83x vs 60x avg). Industrial demand growing from solar panels. 5th year supply deficit. If gold holds $2,800+, silver re-rates. 10% silver price = 30%+ earnings for mid-tier miners.</div>
+  <div class="smid-box blue"><strong>Catalysts:</strong> Gold/silver ratio compression · Solar installation volumes · Fed rate cuts · SLV inflows · LBMA shortage signal.</div>
+  <div class="smid-box red"><strong>Risk:</strong> Gold correction drags silver · Industrial slowdown · Strong USD · Political risk in Mexico/Peru.</div>
+  <table class="tbl"><thead><tr><th>Name</th><th>Ticker</th><th>Price</th><th>Chg%</th><th>Type</th><th>Mkt Cap</th><th>Key Catalyst</th></tr></thead>
+  <tbody>
+  <tr><td style="color:#fff;font-weight:600;">First Majestic Silver</td><td><span class="tag tag-silver">AG</span></td><td id="sp-AG">—</td><td id="sc-AG">—</td><td>Pure Play</td><td>~$2B</td><td>Silver spot + Jerritt</td></tr>
+  <tr><td style="color:#fff;font-weight:600;">SilverCorp Metals</td><td><span class="tag tag-silver">SVM</span></td><td id="sp-SVM">—</td><td id="sc-SVM">—</td><td>Pure Play</td><td>~$700M</td><td>Ying mine production</td></tr>
+  <tr><td style="color:#fff;font-weight:600;">Hecla Mining</td><td><span class="tag tag-silver">HL</span></td><td id="sp-HL">—</td><td id="sc-HL">—</td><td>Primary Silver</td><td>~$3B</td><td>Lucky Friday output</td></tr>
+  <tr><td style="color:#fff;font-weight:600;">Pan American Silver</td><td><span class="tag tag-silver">PAAS</span></td><td id="sp-PAAS">—</td><td id="sc-PAAS">—</td><td>Diversified</td><td>~$6B</td><td>Latin America portfolio</td></tr>
+  </tbody></table>
+</div>
+
+<div class="sub-panel" id="sec-geneedit">
+  <div class="smid-box"><strong>Thesis:</strong> Trough creates opportunity. BEAM, NTLA, ARVN near cash-value. Binary catalyst = SMID edge. 0.5-1% max, stop at −35%, sell 40% on spike day.</div>
+  <div class="smid-box blue"><strong>Catalysts:</strong> BEAM ESCAPE interim · NTLA-2001 Phase I · ARVN ARV-102 · FDA first base-editing approval · Pharma licensing.</div>
+  <div class="smid-box red"><strong>Risk:</strong> Clinical failure (binary wipeout) · Safety signal · Cash runway (all loss-making).</div>
+  <table class="tbl"><thead><tr><th>Name</th><th>Ticker</th><th>Price</th><th>Chg%</th><th>Type</th><th>Mkt Cap</th><th>Key Catalyst</th></tr></thead>
+  <tbody>
+  <tr><td style="color:#fff;font-weight:600;">Beam Therapeutics</td><td><span class="tag tag-bioai">BEAM</span></td><td id="sp-BEAM">—</td><td id="sc-BEAM">—</td><td>Base Editing</td><td>~$1.5B</td><td>ESCAPE interim data</td></tr>
+  <tr><td style="color:#fff;font-weight:600;">Intellia Therapeutics</td><td><span class="tag tag-bioai">NTLA</span></td><td id="sp-NTLA">—</td><td id="sc-NTLA">—</td><td>CRISPR In Vivo</td><td>~$1.2B</td><td>NTLA-2001 Phase I</td></tr>
+  <tr><td style="color:#fff;font-weight:600;">Arvinas</td><td><span class="tag tag-bioai">ARVN</span></td><td id="sp-ARVN">—</td><td id="sc-ARVN">—</td><td>PROTAC</td><td>~$1.5B</td><td>ARV-102 neuro data</td></tr>
+  <tr><td style="color:#fff;font-weight:600;">Kymera Therapeutics</td><td><span class="tag tag-bioai">KYMR</span></td><td id="sp-KYMR">—</td><td id="sc-KYMR">—</td><td>Degrader</td><td>~$1.5B</td><td>KT-621 Phase 2</td></tr>
+  </tbody></table>
+</div>
+
+<div class="sub-panel" id="sec-bioai">
+  <div class="smid-box"><strong>Thesis:</strong> AI applied to drug discovery. RXRX has Roche + Bayer partnerships. SDGR sells to every major pharma. Platform value real. 8-12 analysts — market doesn't fully understand yet.</div>
+  <div class="smid-box blue"><strong>Catalysts:</strong> RXRX Roche/Bayer milestones · SDGR enterprise contracts · FDA-approved AI-discovered drug · Big pharma platform licensing.</div>
+  <div class="smid-box red"><strong>Risk:</strong> Cash burn — both loss-making · AI drug unproven at Phase III · Big pharma in-house AI teams · Valuation rich vs near-term revenue.</div>
+  <table class="tbl"><thead><tr><th>Name</th><th>Ticker</th><th>Price</th><th>Chg%</th><th>Type</th><th>Mkt Cap</th><th>Key Catalyst</th></tr></thead>
+  <tbody>
+  <tr><td style="color:#fff;font-weight:600;">Recursion Pharma</td><td><span class="tag tag-bioai">RXRX</span></td><td id="sp-RXRX">—</td><td id="sc-RXRX">—</td><td>AI Platform</td><td>~$1.5B</td><td>Roche milestone</td></tr>
+  <tr><td style="color:#fff;font-weight:600;">Schrödinger</td><td><span class="tag tag-bioai">SDGR</span></td><td id="sp-SDGR">—</td><td id="sc-SDGR">—</td><td>Sim Software</td><td>~$2B</td><td>Enterprise contracts</td></tr>
+  </tbody></table>
+</div>
+
+<div class="sub-panel" id="sec-psych">
+  <div class="smid-box"><strong>Thesis:</strong> Deep trough after MDMA FDA rejection 2024. Psilocybin still advancing. $20B+ TRD market with no good solutions. Position at trough with 0.5-1%, wait for Phase III.</div>
+  <div class="smid-box blue"><strong>Catalysts:</strong> MNMD psilocybin Phase III · CMPS COMP360 Phase IIb · FDA psilocybin scheduling · State legalisation · Big pharma licensing.</div>
+  <div class="smid-box red"><strong>Risk:</strong> FDA rejection · Political headwinds · Scale challenges · Cash burn · Very long catalysts (years).</div>
+  <table class="tbl"><thead><tr><th>Name</th><th>Ticker</th><th>Price</th><th>Chg%</th><th>Type</th><th>Mkt Cap</th><th>Key Catalyst</th></tr></thead>
+  <tbody>
+  <tr><td style="color:#fff;font-weight:600;">Mind Medicine</td><td><span class="tag tag-bioai">MNMD</span></td><td id="sp-MNMD">—</td><td id="sc-MNMD">—</td><td>Psilocybin</td><td>~$600M</td><td>MM120 Phase III</td></tr>
+  <tr><td style="color:#fff;font-weight:600;">COMPASS Pathways</td><td><span class="tag tag-bioai">CMPS</span></td><td id="sp-CMPS">—</td><td id="sc-CMPS">—</td><td>Psilocybin</td><td>~$400M</td><td>COMP360 Phase IIb</td></tr>
+  </tbody></table>
+</div>
+
+<div class="sub-panel" id="sec-mro">
+  <div class="smid-box"><strong>Thesis:</strong> OEMs backlogged 8-10 years. Older fleets fly longer. HEICO and TransDigm: proprietary parts, pricing power, sticky relationships. Low hype, stable cashflows, consistent compounding.</div>
+  <div class="smid-box blue"><strong>Catalysts:</strong> Boeing 737 MAX ramp · Airline utilisation >85% · HEICO PMA expansion · TransDigm acquisition · Air travel resilience.</div>
+  <div class="smid-box red"><strong>Risk:</strong> Recession reducing air travel · Boeing quality issues · Valuation — HEICO and TDG not cheap.</div>
+  <table class="tbl"><thead><tr><th>Name</th><th>Ticker</th><th>Price</th><th>Chg%</th><th>Type</th><th>Mkt Cap</th><th>Key Catalyst</th></tr></thead>
+  <tbody>
+  <tr><td style="color:#fff;font-weight:600;">HEICO Corporation</td><td><span class="tag tag-defense">HEI</span></td><td id="sp-HEI">—</td><td id="sc-HEI">—</td><td>PMA Parts</td><td>~$28B</td><td>PMA market share</td></tr>
+  <tr><td style="color:#fff;font-weight:600;">TransDigm Group</td><td><span class="tag tag-defense">TDG</span></td><td id="sp-TDG">—</td><td id="sc-TDG">—</td><td>Proprietary Parts</td><td>~$70B</td><td>Acquisition + pricing</td></tr>
+  <tr><td style="color:#fff;font-weight:600;">AAR Corp</td><td><span class="tag tag-defense">AIR</span></td><td id="sp-AIR">—</td><td id="sc-AIR">—</td><td>MRO Services</td><td>~$2B</td><td>Gov contract wins</td></tr>
+  </tbody></table>
+</div>
+
+</div><!-- end tab-sectors -->
+
+<!-- ═══ TAB 5 — PORTFOLIO ═══ -->
+<div class="tab-panel" id="tab-portfolio">
+
+<div class="pf-summary" id="pfSummary">
+  <div class="pf-kpi"><div class="pk-label">Total Value</div><div class="pk-val" id="pfTotalVal">$0</div><div class="pk-sub">at current prices</div></div>
+  <div class="pf-kpi"><div class="pk-label">Total Cost</div><div class="pk-val" id="pfTotalCost">$0</div><div class="pk-sub">book value</div></div>
+  <div class="pf-kpi"><div class="pk-label">Total P&L</div><div class="pk-val" id="pfTotalPnl">$0</div><div class="pk-sub" id="pfTotalPct">0.00%</div></div>
+  <div class="pf-kpi"><div class="pk-label">Positions</div><div class="pk-val" id="pfCount">0</div><div class="pk-sub">open trades</div></div>
+</div>
+
+<!-- ADD POSITION FORM -->
+<div class="sec-head">➕ Add / Update Position</div>
+<div class="pf-form" id="pfForm">
+  <div><label>Ticker</label><input id="pfTicker" placeholder="e.g. NXE" style="text-transform:uppercase;"></div>
+  <div><label>Shares</label><input id="pfShares" type="number" placeholder="100" min="0"></div>
+  <div><label>Avg Cost ($)</label><input id="pfCost" type="number" placeholder="12.50" step="0.01"></div>
+  <div><label>Sector</label>
+    <select id="pfSector">
+      <option value="Uranium">⚛️ Uranium</option>
+      <option value="AI Infra">🏭 AI Infra</option>
+      <option value="Energy">⚡ Energy</option>
+      <option value="Defence">🛡 Defence</option>
+      <option value="Silver">🥈 Silver</option>
+      <option value="Gene Edit">🧬 Gene Edit</option>
+      <option value="Bio-AI">🤖 Bio-AI</option>
+      <option value="Psych">🍄 Psych</option>
+      <option value="MRO">✈️ MRO</option>
+      <option value="Other">Other</option>
+    </select>
+  </div>
+  <div style="grid-column:1/-1;"><label>Notes (optional)</label><input id="pfNotes" placeholder="Thesis in one line…"></div>
+  <div style="grid-column:1/-1;"><button class="add-btn" onclick="addPosition()">+ Add Position</button></div>
+</div>
+
+<!-- POSITIONS TABLE -->
+<div class="sec-head">📋 Open Positions</div>
+<div style="overflow-x:auto;margin-bottom:24px;">
+<table class="tbl" style="min-width:750px;" id="pfTable">
+<thead><tr>
+  <th>Ticker</th><th>Sector</th><th>Shares</th><th>Avg Cost</th><th>Current Price</th><th>Market Value</th><th>P&L ($)</th><th>P&L (%)</th><th>Notes</th><th></th>
+</tr></thead>
+<tbody id="pfTbody">
+<tr id="pfEmpty"><td colspan="10" style="text-align:center;color:var(--dim);padding:24px;font-style:italic;">No positions yet. Add your first trade above.</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- ALLOCATION CHART -->
+<div class="sec-head">📊 Sector Allocation</div>
+<div id="pfAllocBars" style="margin-bottom:24px;max-width:600px;"></div>
+
+<div style="font-size:0.6rem;color:var(--dim);margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">
+  Positions saved to browser localStorage. Clear browser data = positions lost. Export positions: <button onclick="exportPortfolio()" style="background:none;border:1px solid var(--border);color:var(--dim);font-size:0.58rem;padding:2px 8px;border-radius:3px;cursor:pointer;">⬇ Export CSV</button>
+</div>
+</div><!-- end tab-portfolio -->
+
+<!-- ═══ TAB 6 — MANIFESTO ═══ -->
+<div class="tab-panel" id="tab-manifesto">
+<div class="manifesto">
+  <div class="mf-label">Dead Quiet — The Thesis</div>
+  <div class="mf-line">I bought Robinhood at $38 on IPO day.</div>
+  <div class="mf-fact">The platform built for retail. Down 75% in six months.</div>
+  <div class="mf-line">Beyond Meat was going to change everything.</div>
+  <div class="mf-fact red">It went from $230 to $8.</div>
+  <div class="mf-line">WeWork was valued at $47 billion.</div>
+  <div class="mf-fact">It never IPO'd. You couldn't even get in to lose money.</div>
+  <div class="mf-line">I bought ETH at $5,000.</div>
+  <div class="mf-fact red">Six months later it was $1,100.</div>
+  <div class="mf-divider"></div>
+  <div class="mf-line mf-gold">Small cap. Mid cap. Float under 30 million shares.</div>
+  <div class="mf-fact">Goldman has 20 analysts on Apple. Satellite data. Alt data. They don't cover a $200M float.</div>
+  <div class="mf-line mf-gold">No analyst on the call. No Bloomberg alert. No price target.</div>
+  <div class="mf-fact">That's where the setup lives.</div>
+  <div class="mf-line mf-gold">You don't need to be smarter. You need to be earlier.</div>
+  <div class="mf-line mf-gold">One trigger. Nobody watching yet.</div>
+  <div class="mf-fact">That window doesn't stay open long.</div>
+  <div class="mf-line mf-gold">Narrative. Catalyst. Float. Vacuum.</div>
+  <div class="mf-fact">Position before the narrative spreads. Exit before it peaks.</div>
+  <div class="mf-divider"></div>
+  <div class="mf-final">Find them first.</div>
+  <div class="mf-fact">Leave before everyone else gets stupid.</div>
+</div>
+</div><!-- end tab-manifesto -->
+
+<!-- ═══ TAB 7 — SETUP SCORE ═══ -->
+<div class="tab-panel" id="tab-setup">
+<div style="max-width:800px;margin:0 auto;">
+  <div style="font-family:'Syne',sans-serif;font-size:0.58rem;letter-spacing:0.25em;text-transform:uppercase;color:#333;margin-bottom:24px;">Dead Quiet Setup Score — SMID Vacuum Checklist</div>
+  <div style="margin-bottom:16px;"><label style="font-size:0.65rem;color:var(--dim);">Ticker being evaluated:</label><input id="setupTicker" placeholder="e.g. NXE" style="background:var(--surface2);border:1px solid var(--dim2);border-radius:5px;color:var(--text);font-family:'Syne',sans-serif;font-size:0.78rem;font-weight:700;padding:5px 10px;margin-left:10px;width:100px;outline:none;text-transform:uppercase;"></div>
+  <div class="score-grid">
+    <div class="score-card"><div class="score-cat">Narrative</div>
+      <label class="score-item"><input type="checkbox" class="dq-chk" onchange="dqScore()"><span>Clear story — one sentence, non-consensus</span></label>
+      <label class="score-item"><input type="checkbox" class="dq-chk" onchange="dqScore()"><span>Not yet in mainstream media</span></label>
+      <label class="score-item"><input type="checkbox" class="dq-chk" onchange="dqScore()"><span>Theme is expanding, not shrinking</span></label>
+    </div>
+    <div class="score-card"><div class="score-cat">Catalyst</div>
+      <label class="score-item"><input type="checkbox" class="dq-chk" onchange="dqScore()"><span>Dated catalyst within next 60 days</span></label>
+      <label class="score-item"><input type="checkbox" class="dq-chk" onchange="dqScore()"><span>Binary outcome (pass/fail/contract)</span></label>
+      <label class="score-item"><input type="checkbox" class="dq-chk" onchange="dqScore()"><span>Market underpricing the outcome</span></label>
+    </div>
+    <div class="score-card"><div class="score-cat">Float</div>
+      <label class="score-item"><input type="checkbox" class="dq-chk" onchange="dqScore()"><span>Float under 30M shares</span></label>
+      <label class="score-item"><input type="checkbox" class="dq-chk" onchange="dqScore()"><span>2 analysts or fewer covering</span></label>
+      <label class="score-item"><input type="checkbox" class="dq-chk" onchange="dqScore()"><span>Institutional ownership &lt; 40%</span></label>
+    </div>
+    <div class="score-card"><div class="score-cat">Vacuum</div>
+      <label class="score-item"><input type="checkbox" class="dq-chk" onchange="dqScore()"><span>No Bloomberg alert in last 30 days</span></label>
+      <label class="score-item"><input type="checkbox" class="dq-chk" onchange="dqScore()"><span>Volume still below 3-month average</span></label>
+      <label class="score-item"><input type="checkbox" class="dq-chk" onchange="dqScore()"><span>Price not yet reacted to catalyst</span></label>
+    </div>
+  </div>
+  <div style="background:#0a0a0a;border:1px solid #1a1a1a;border-radius:6px;padding:24px;text-align:center;margin-bottom:20px;">
+    <div style="font-size:0.65rem;color:#444;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.1em;">Dead Quiet Score</div>
+    <div class="score-num" id="dqScoreVal">0<span class="score-denom">/12</span></div>
+    <div class="score-label-out" id="dqScoreLabel">Check criteria above</div>
+    <div id="dqScoreBar" style="margin-top:12px;height:6px;background:#111;border-radius:3px;overflow:hidden;max-width:300px;margin-left:auto;margin-right:auto;"><div id="dqScoreBarFill" style="height:100%;border-radius:3px;width:0%;transition:width 0.4s,background 0.4s;"></div></div>
+  </div>
+  <div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:14px;font-size:0.65rem;color:var(--dim);line-height:1.8;">
+    <strong style="color:var(--text);">Sizing guide:</strong><br>
+    0–3: Don't touch. Not a setup.<br>
+    4–6: Watch only. No position until score improves.<br>
+    7–9: Possible setup. 0.5–1% position, tight stop.<br>
+    10–11: Strong setup. 1–3% depending on conviction.<br>
+    <strong style="color:var(--yellow);">12/12: Dead Quiet. Pull the trigger. Size in.</strong>
+  </div>
+</div>
+</div><!-- end tab-setup -->
+
+<script>
+// ═══════════════════════════════════════════════════
+// SMID MASTER TABLE DATA
+// ═══════════════════════════════════════════════════
+const SMID_STOCKS = [
+  {t:'NXE',  n:'NexGen Energy',          sec:'uranium',  cap:'$3B',  float:'~80M',  analysts:4,  cv:'h5', cv_l:'Highest',  action:'BUY',    cat:'Rook I permitting'},
+  {t:'UUUU', n:'Energy Fuels',           sec:'uranium',  cap:'$800M',float:'~160M', analysts:5,  cv:'h4', cv_l:'High',     action:'BUY',    cat:'White Mesa expansion'},
+  {t:'DNN',  n:'Denison Mines',          sec:'uranium',  cap:'$1B',  float:'~800M', analysts:3,  cv:'h3', cv_l:'Med-High', action:'ACC',    cat:'Wheeler River ISR'},
+  {t:'UROY', n:'Uranium Royalty Corp',   sec:'uranium',  cap:'$200M',float:'~60M',  analysts:2,  cv:'h3', cv_l:'Med-High', action:'ACC',    cat:'Royalty stream activation'},
+  {t:'POWL', n:'Powell Industries',      sec:'aiinfra',  cap:'$3B',  float:'~12M',  analysts:4,  cv:'h5', cv_l:'Highest',  action:'BUY',    cat:'Q backlog guide'},
+  {t:'AAON', n:'AAON Inc.',              sec:'aiinfra',  cap:'$5B',  float:'~80M',  analysts:6,  cv:'h4', cv_l:'High',     action:'BUY',    cat:'DataCenter segment rev'},
+  {t:'SMCI', n:'Super Micro Computer',   sec:'aiinfra',  cap:'$25B', float:'~560M', analysts:14, cv:'h2', cv_l:'Medium',   action:'HOLD',   cat:'Annual filings + guidance'},
+  {t:'NVDA', n:'NVIDIA Corp.',           sec:'aiinfra',  cap:'$3T',  float:'~24B',  analysts:55, cv:'h3', cv_l:'Med-High', action:'HOLD',   cat:'Quarterly rev guide'},
+  {t:'KNTK', n:'Kinetik Holdings',       sec:'energy',   cap:'$6B',  float:'~140M', analysts:10, cv:'h4', cv_l:'High',     action:'BUY',    cat:'Permian volume expansion'},
+  {t:'AM',   n:'Antero Midstream',       sec:'energy',   cap:'$6B',  float:'~480M', analysts:12, cv:'h3', cv_l:'Med-High', action:'ACC',    cat:'FCF + dividend growth'},
+  {t:'LNG',  n:'Cheniere Energy',        sec:'energy',   cap:'$42B', float:'~250M', analysts:18, cv:'h3', cv_l:'Med-High', action:'HOLD',   cat:'Contract backlog updates'},
+  {t:'NOG',  n:'Northern Oil & Gas',     sec:'energy',   cap:'$4B',  float:'~90M',  analysts:8,  cv:'h4', cv_l:'High',     action:'BUY',    cat:'Acquisition + buyback'},
+  {t:'CIVI', n:'Civitas Resources',      sec:'energy',   cap:'$5B',  float:'~90M',  analysts:12, cv:'h4', cv_l:'High',     action:'BUY',    cat:'FCF yield + buyback'},
+  {t:'MTDR', n:'Matador Resources',      sec:'energy',   cap:'$6B',  float:'~120M', analysts:14, cv:'h3', cv_l:'Med-High', action:'ACC',    cat:'Delaware Basin production'},
+  {t:'VTLE', n:'Vital Energy',           sec:'energy',   cap:'$1.5B',float:'~45M',  analysts:10, cv:'h2', cv_l:'Medium',   action:'WAIT',   cat:'Debt reduction milestones'},
+  {t:'KTOS', n:'Kratos Defense',         sec:'defence',  cap:'$4B',  float:'~130M', analysts:9,  cv:'h5', cv_l:'Highest',  action:'BUY',    cat:'Valkyrie contract award'},
+  {t:'BWXT', n:'BWX Technologies',       sec:'defence',  cap:'$8B',  float:'~90M',  analysts:8,  cv:'h4', cv_l:'High',     action:'BUY',    cat:'Submarine programme exp.'},
+  {t:'MRCY', n:'Mercury Systems',        sec:'defence',  cap:'$1.5B',float:'~55M',  analysts:7,  cv:'h2', cv_l:'Medium',   action:'WAIT',   cat:'Margin recovery + backlog'},
+  {t:'AG',   n:'First Majestic Silver',  sec:'silver',   cap:'$2B',  float:'~290M', analysts:8,  cv:'h4', cv_l:'High',     action:'ACC',    cat:'Silver spot + Jerritt'},
+  {t:'SVM',  n:'SilverCorp Metals',      sec:'silver',   cap:'$700M',float:'~175M', analysts:4,  cv:'h3', cv_l:'Med-High', action:'ACC',    cat:'Ying mine production'},
+  {t:'HL',   n:'Hecla Mining',           sec:'silver',   cap:'$3B',  float:'~600M', analysts:7,  cv:'h3', cv_l:'Med-High', action:'ACC',    cat:'Lucky Friday + Greens Creek'},
+  {t:'PAAS', n:'Pan American Silver',    sec:'silver',   cap:'$6B',  float:'~470M', analysts:14, cv:'h2', cv_l:'Medium',   action:'HOLD',   cat:'Latin America portfolio'},
+  {t:'BEAM', n:'Beam Therapeutics',      sec:'bio',      cap:'$1.5B',float:'~60M',  analysts:14, cv:'h4', cv_l:'High',     action:'BUY',    cat:'ESCAPE interim data (H1)'},
+  {t:'NTLA', n:'Intellia Therapeutics',  sec:'bio',      cap:'$1.2B',float:'~75M',  analysts:16, cv:'h4', cv_l:'High',     action:'BUY',    cat:'NTLA-2001 Phase I update'},
+  {t:'ARVN', n:'Arvinas',               sec:'bio',      cap:'$1.5B',float:'~65M',  analysts:14, cv:'h3', cv_l:'Med-High', action:'WAIT',   cat:'ARV-102 neuro data'},
+  {t:'KYMR', n:'Kymera Therapeutics',    sec:'bio',      cap:'$1.5B',float:'~55M',  analysts:12, cv:'h3', cv_l:'Med-High', action:'WAIT',   cat:'KT-621 atopic derm P2'},
+  {t:'RXRX', n:'Recursion Pharma',       sec:'bio',      cap:'$1.5B',float:'~300M', analysts:10, cv:'h3', cv_l:'Med-High', action:'ACC',    cat:'Roche milestone + pipeline'},
+  {t:'SDGR', n:'Schrödinger',           sec:'bio',      cap:'$2B',  float:'~120M', analysts:10, cv:'h2', cv_l:'Medium',   action:'WAIT',   cat:'Enterprise contract growth'},
+  {t:'MNMD', n:'Mind Medicine',          sec:'bio',      cap:'$600M',float:'~280M', analysts:5,  cv:'spec',cv_l:'Spec',    action:'SPEC',   cat:'MM120 Phase III data'},
+  {t:'CMPS', n:'COMPASS Pathways',       sec:'bio',      cap:'$400M',float:'~65M',  analysts:8,  cv:'spec',cv_l:'Spec',    action:'SPEC',   cat:'COMP360 Phase IIb'},
+  {t:'HEI',  n:'HEICO Corporation',      sec:'defence',  cap:'$28B', float:'~140M', analysts:10, cv:'h2', cv_l:'Medium',   action:'HOLD',   cat:'PMA market share gains'},
+  {t:'TDG',  n:'TransDigm Group',        sec:'defence',  cap:'$70B', float:'~55M',  analysts:14, cv:'h2', cv_l:'Medium',   action:'HOLD',   cat:'Acquisition + aftermarket'},
+  {t:'AIR',  n:'AAR Corp',               sec:'defence',  cap:'$2B',  float:'~35M',  analysts:6,  cv:'h3', cv_l:'Med-High', action:'ACC',    cat:'Government contract wins'},
+];
+
+// ═══════════════════════════════════════════════════
+// REGIME DATA
+// ═══════════════════════════════════════════════════
+const REGIMES = {
+  'hold_soft_medium': {
+    title: 'Hold Rates · Soft Landing · Elevated Geo Risk',
+    chips: [{l:'Overweight',c:'chip-over'},{l:'Quality SMID',c:'chip-over'},{l:'Energy / Defence',c:'chip-over'},{l:'Underweight Bio',c:'chip-under'}],
+    rows: [
+      ['Best sectors', 'AI Infra, Energy, Defence, Uranium'],
+      ['Avoid', 'Speculative biotech, high-multiple growth'],
+      ['Duration', 'Neutral — not extending duration aggressively'],
+      ['Sizing', '3-6% per high-conviction SMID name'],
+    ]
+  },
+  'cut_soft_medium': {
+    title: 'Cutting Rates · Soft Landing · Elevated Geo Risk',
+    chips: [{l:'Risk-On',c:'chip-over'},{l:'SMID Re-rate',c:'chip-over'},{l:'Gene Editing',c:'chip-over'},{l:'Reduce Cash',c:'chip-neutral'}],
+    rows: [
+      ['Best sectors', 'Gene Editing, Bio-AI, Silver, SMID broadly'],
+      ['Key trade', 'IWM vs SPY — small cap catch-up'],
+      ['Duration', 'Extend — longer duration benefits from cuts'],
+      ['Sizing', 'Add Bio positions as cuts confirm soft landing'],
+    ]
+  },
+  'hike_soft_medium': {
+    title: 'Hiking Rates · Soft Landing · Elevated Geo Risk',
+    chips: [{l:'Defensive',c:'chip-neutral'},{l:'Energy',c:'chip-over'},{l:'Reduce Growth',c:'chip-under'},{l:'Commodities',c:'chip-over'}],
+    rows: [
+      ['Best sectors', 'Energy, Commodities, Defence, Cash'],
+      ['Avoid', 'High-multiple growth, loss-making biotech'],
+      ['Duration', 'Short — higher rates hurt duration assets'],
+      ['Sizing', 'Reduce speculative, increase Energy/Commodities'],
+    ]
+  },
+  'hold_recession_medium': {
+    title: 'Hold Rates · Recession Fear · Elevated Geo Risk',
+    chips: [{l:'Defensive',c:'chip-neutral'},{l:'Gold',c:'chip-over'},{l:'Energy',c:'chip-over'},{l:'Avoid SMID',c:'chip-under'}],
+    rows: [
+      ['Best sectors', 'Gold, Defence, Energy, Cash'],
+      ['Avoid', 'High-beta SMID, speculative, bio'],
+      ['Key risk', 'Credit tightening — watch HY spreads'],
+      ['Sizing', 'Reduce overall exposure 30-40%, raise cash'],
+    ]
+  },
+  'cut_recession_medium': {
+    title: 'Cutting Rates · Recession Fear · Elevated Geo Risk',
+    chips: [{l:'Oversold bounce?',c:'chip-neutral'},{l:'Quality only',c:'chip-over'},{l:'No spec',c:'chip-under'},{l:'Watch credit',c:'chip-neutral'}],
+    rows: [
+      ['Best sectors', 'Quality SMID with strong balance sheets only'],
+      ['Avoid', 'All speculative, all loss-making, all high-beta'],
+      ['Key trade', 'Wait — don\'t catch falling knives'],
+      ['Sizing', 'Maximum 1-2% per position, high cash'],
+    ]
+  },
+  'hold_strong_high': {
+    title: 'Hold Rates · Strong Growth · High Geo Risk',
+    chips: [{l:'Defence Max',c:'chip-over'},{l:'Uranium',c:'chip-over'},{l:'Energy',c:'chip-over'},{l:'Hedge',c:'chip-hedge'}],
+    rows: [
+      ['Best sectors', 'Defence, Uranium (nuclear), Energy, Gold'],
+      ['Avoid', 'Anything consumer/discretionary, China-exposed'],
+      ['Key trade', 'KTOS + BWXT + NXE — the war premium basket'],
+      ['Sizing', 'Max defence allocation, 2-4% per name'],
+    ]
+  },
+};
+
+function getRegimeKey() {
+  var r = document.getElementById('mRate').value;
+  var g = document.getElementById('mGrowth').value;
+  var geo = document.getElementById('mGeo').value;
+  return r + '_' + g + '_' + geo;
+}
+
+function updateRegime() {
+  var key = getRegimeKey();
+  var data = REGIMES[key];
+  var out = document.getElementById('regimeOutput');
+  if (!data) {
+    out.innerHTML = '<div class="ro-title">Regime: ' + key.replace(/_/g,' ') + '</div><div style="font-size:0.68rem;color:var(--dim);">Specific playbook not yet mapped for this combination. Apply general principles: rate cuts = risk-on, geo risk = defence/energy, recession = defensive.</div>';
+    return;
+  }
+  var chips = data.chips.map(function(c){ return '<span class="regime-chip ' + c.c + '">' + c.l + '</span>'; }).join('');
+  var rows = data.rows.map(function(r){ return '<div class="regime-row"><span>' + r[0] + '</span><strong>' + r[1] + '</strong></div>'; }).join('');
+  out.innerHTML = '<div class="ro-title">' + data.title + '</div><div class="regime-chips">' + chips + '</div>' + rows;
+}
+
+// ═══════════════════════════════════════════════════
+// TAB SWITCHING
+// ═══════════════════════════════════════════════════
+function switchTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+  var p = document.getElementById('tab-' + id);
+  if (p) p.classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(function(b){
+    if (b.getAttribute('onclick') && b.getAttribute('onclick').includes("'" + id + "'")) b.classList.add('active');
+  });
+}
+
+function switchSub(group, id) {
+  var panel = document.getElementById('tab-' + group);
+  if (!panel) return;
+  panel.querySelectorAll('.sub-panel').forEach(function(p){ p.classList.remove('active'); });
+  panel.querySelectorAll('.sub-tab').forEach(function(b){ b.classList.remove('active'); });
+  var sp = document.getElementById(group + '-' + id);
+  if (sp) sp.classList.add('active');
+  panel.querySelectorAll('.sub-tab').forEach(function(b){
+    if (b.getAttribute('onclick') && b.getAttribute('onclick').includes("'" + id + "'")) b.classList.add('active');
+  });
+}
+
+function switchSector(id) {
+  var panel = document.getElementById('tab-sectors');
+  panel.querySelectorAll('.sub-panel').forEach(function(p){ p.classList.remove('active'); });
+  document.getElementById('sectorTabs').querySelectorAll('.sub-tab').forEach(function(b){ b.classList.remove('active'); });
+  var sp = document.getElementById('sec-' + id);
+  if (sp) sp.classList.add('active');
+  document.getElementById('sectorTabs').querySelectorAll('.sub-tab').forEach(function(b){
+    if (b.getAttribute('onclick') && b.getAttribute('onclick').includes("'" + id + "'")) b.classList.add('active');
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// SMID TABLE
+// ═══════════════════════════════════════════════════
+var smidFilter_active = 'all';
+var smidSort_col = -1, smidSort_dir = 1;
+
+function renderSmidTable(stocks) {
+  var tbody = document.getElementById('smidTbody');
+  var actionColor = {BUY:'var(--green)',ACC:'#86efac',HOLD:'var(--yellow)',WAIT:'var(--blue)',SPEC:'var(--purple)',AVOID:'var(--red)'};
+  tbody.innerHTML = stocks.map(function(s){
+    var price = liveCache[s.t] ? '$' + liveCache[s.t].price.toFixed(2) : '—';
+    var pct = liveCache[s.t] ? (liveCache[s.t].pct >= 0 ? '+' : '') + liveCache[s.t].pct.toFixed(2) + '%' : '—';
+    var pctCol = liveCache[s.t] ? (liveCache[s.t].pct >= 0 ? 'var(--green)' : 'var(--red)') : 'var(--dim)';
+    var aCol = actionColor[s.action] || 'var(--text)';
+    return '<tr data-sector="' + s.sec + '" data-ticker="' + s.t.toLowerCase() + '" data-name="' + s.n.toLowerCase() + '">' +
+      '<td style="font-family:Syne,sans-serif;font-weight:700;color:#fff;">' + s.t + '</td>' +
+      '<td style="color:var(--text);">' + s.n + '</td>' +
+      '<td><span class="tag tag-' + s.sec + '">' + s.sec + '</span></td>' +
+      '<td id="smt-' + s.t + '" style="font-weight:700;color:#fff;">' + price + '</td>' +
+      '<td id="smc-' + s.t + '" style="font-weight:700;color:' + pctCol + ';">' + pct + '</td>' +
+      '<td>' + s.cap + '</td>' +
+      '<td>' + s.float + '</td>' +
+      '<td style="color:' + (s.analysts <= 5 ? 'var(--green)' : s.analysts <= 10 ? 'var(--yellow)' : 'var(--dim)') + ';font-weight:700;">' + s.analysts + '</td>' +
+      '<td><span class="cv cv-' + s.cv + '">' + s.cv_l + '</span></td>' +
+      '<td style="color:' + aCol + ';font-weight:700;font-size:0.68rem;">' + s.action + '</td>' +
+      '<td style="color:var(--dim);font-size:0.63rem;">' + s.cat + '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+function filterSmidTable() {
+  var q = document.getElementById('smidSearch').value.toLowerCase();
+  document.querySelectorAll('#smidTbody tr').forEach(function(r){
+    var t = r.getAttribute('data-ticker') || '';
+    var n = r.getAttribute('data-name') || '';
+    var sec = r.getAttribute('data-sector') || '';
+    var sectorOk = smidFilter_active === 'all' || sec === smidFilter_active;
+    var searchOk = !q || t.includes(q) || n.includes(q);
+    r.style.display = (sectorOk && searchOk) ? '' : 'none';
+  });
+}
+
+function smidFilter(btn, sector) {
+  smidFilter_active = sector;
+  document.querySelectorAll('.filter-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  filterSmidTable();
+}
+
+// ═══════════════════════════════════════════════════
+// SETUP SCORE
+// ═══════════════════════════════════════════════════
+function dqScore() {
+  var chks = document.querySelectorAll('.dq-chk');
+  var n = 0;
+  chks.forEach(function(c){ if (c.checked) n++; });
+  var el = document.getElementById('dqScoreVal');
+  var lb = document.getElementById('dqScoreLabel');
+  var bar = document.getElementById('dqScoreBarFill');
+  el.innerHTML = n + '<span class="score-denom">/12</span>';
+  var col = n <= 3 ? '#444' : n <= 6 ? '#888' : n <= 9 ? 'var(--yellow)' : 'var(--green)';
+  el.style.color = col;
+  var labels = ['Check criteria above', 'Early stage — keep watching', 'Possible setup forming', 'Strong setup — size in', 'Dead Quiet. Pull the trigger.'];
+  lb.textContent = labels[Math.floor(n / 3)];
+  lb.style.color = col;
+  bar.style.width = (n / 12 * 100) + '%';
+  bar.style.background = col;
+}
+
+// ═══════════════════════════════════════════════════
+// PORTFOLIO
+// ═══════════════════════════════════════════════════
+var portfolio = JSON.parse(localStorage.getItem('dq_portfolio') || '[]');
+
+function savePortfolio() {
+  localStorage.setItem('dq_portfolio', JSON.stringify(portfolio));
+}
+
+function addPosition() {
+  var t = document.getElementById('pfTicker').value.trim().toUpperCase();
+  var sh = parseFloat(document.getElementById('pfShares').value);
+  var cost = parseFloat(document.getElementById('pfCost').value);
+  var sec = document.getElementById('pfSector').value;
+  var notes = document.getElementById('pfNotes').value.trim();
+  if (!t || isNaN(sh) || isNaN(cost) || sh <= 0 || cost <= 0) {
+    alert('Please fill in ticker, shares, and avg cost.'); return;
+  }
+  var existing = portfolio.findIndex(function(p){ return p.t === t; });
+  if (existing >= 0) {
+    portfolio[existing] = {t:t, sh:sh, cost:cost, sec:sec, notes:notes};
+  } else {
+    portfolio.push({t:t, sh:sh, cost:cost, sec:sec, notes:notes});
+  }
+  savePortfolio();
+  document.getElementById('pfTicker').value = '';
+  document.getElementById('pfShares').value = '';
+  document.getElementById('pfCost').value = '';
+  document.getElementById('pfNotes').value = '';
+  renderPortfolio();
+}
+
+function removePosition(t) {
+  portfolio = portfolio.filter(function(p){ return p.t !== t; });
+  savePortfolio();
+  renderPortfolio();
+}
+
+function renderPortfolio() {
+  var tbody = document.getElementById('pfTbody');
+  var empty = document.getElementById('pfEmpty');
+  if (portfolio.length === 0) {
+    tbody.innerHTML = '<tr id="pfEmpty"><td colspan="10" style="text-align:center;color:var(--dim);padding:24px;font-style:italic;">No positions yet. Add your first trade above.</td></tr>';
+    document.getElementById('pfTotalVal').textContent = '$0';
+    document.getElementById('pfTotalCost').textContent = '$0';
+    document.getElementById('pfTotalPnl').textContent = '$0';
+    document.getElementById('pfTotalPct').textContent = '0.00%';
+    document.getElementById('pfCount').textContent = '0';
+    document.getElementById('pfAllocBars').innerHTML = '';
+    return;
+  }
+  var totalVal = 0, totalCost = 0;
+  var sectorMap = {};
+  var rows = portfolio.map(function(p){
+    var live = liveCache[p.t];
+    var curPrice = live ? live.price : null;
+    var mktVal = curPrice ? curPrice * p.sh : null;
+    var bookVal = p.cost * p.sh;
+    var pnl = mktVal ? mktVal - bookVal : null;
+    var pnlPct = pnl ? (pnl / bookVal * 100) : null;
+    if (mktVal) totalVal += mktVal;
+    totalCost += bookVal;
+    if (mktVal) {
+      sectorMap[p.sec] = (sectorMap[p.sec] || 0) + mktVal;
+    }
+    var pnlColor = pnl ? (pnl >= 0 ? 'var(--green)' : 'var(--red)') : 'var(--dim)';
+    return '<tr>' +
+      '<td style="font-family:Syne,sans-serif;font-weight:700;color:#fff;">' + p.t + '</td>' +
+      '<td style="font-size:0.65rem;color:var(--dim);">' + p.sec + '</td>' +
+      '<td>' + p.sh.toLocaleString() + '</td>' +
+      '<td>$' + p.cost.toFixed(2) + '</td>' +
+      '<td style="color:#fff;font-weight:700;">' + (curPrice ? '$' + curPrice.toFixed(2) : '—') + '</td>' +
+      '<td>' + (mktVal ? '$' + mktVal.toLocaleString('en', {maximumFractionDigits:0}) : '—') + '</td>' +
+      '<td style="color:' + pnlColor + ';font-weight:700;">' + (pnl ? (pnl >= 0 ? '+' : '') + '$' + pnl.toLocaleString('en', {maximumFractionDigits:0}) : '—') + '</td>' +
+      '<td style="color:' + pnlColor + ';font-weight:700;">' + (pnlPct ? (pnlPct >= 0 ? '+' : '') + pnlPct.toFixed(1) + '%' : '—') + '</td>' +
+      '<td style="font-size:0.62rem;color:var(--dim);max-width:150px;overflow:hidden;text-overflow:ellipsis;">' + (p.notes || '—') + '</td>' +
+      '<td><button onclick="removePosition(\'' + p.t + '\')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:0.8rem;" title="Remove">✕</button></td>' +
+    '</tr>';
+  }).join('');
+  tbody.innerHTML = rows;
+  var totalPnl = totalVal - totalCost;
+  var totalPct = totalCost > 0 ? (totalPnl / totalCost * 100) : 0;
+  document.getElementById('pfTotalVal').textContent = '$' + totalVal.toLocaleString('en', {maximumFractionDigits:0});
+  document.getElementById('pfTotalCost').textContent = '$' + totalCost.toLocaleString('en', {maximumFractionDigits:0});
+  document.getElementById('pfTotalPnl').textContent = (totalPnl >= 0 ? '+$' : '-$') + Math.abs(totalPnl).toLocaleString('en', {maximumFractionDigits:0});
+  document.getElementById('pfTotalPnl').style.color = totalPnl >= 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('pfTotalPct').textContent = (totalPct >= 0 ? '+' : '') + totalPct.toFixed(2) + '%';
+  document.getElementById('pfCount').textContent = portfolio.length;
+  // Allocation bars
+  var allocHtml = '';
+  var sectorColors = {Uranium:'#fbbf24','AI Infra':'#60a5fa',Energy:'#fb923c',Defence:'#60a5fa',Silver:'#c0c0dc','Gene Edit':'#4ade80','Bio-AI':'#c084fc',Psych:'#f472b6',MRO:'#2dd4bf',Other:'#888'};
+  Object.keys(sectorMap).forEach(function(sec){
+    var pct = totalVal > 0 ? (sectorMap[sec] / totalVal * 100) : 0;
+    var col = sectorColors[sec] || '#888';
+    allocHtml += '<div class="alloc-row"><div class="alloc-label">' + sec + '</div><div class="alloc-bar-wrap"><div class="alloc-bar" style="width:' + pct.toFixed(1) + '%;background:' + col + ';opacity:0.7;"></div></div><div class="alloc-pct" style="color:' + col + ';">' + pct.toFixed(1) + '%</div></div>';
+  });
+  document.getElementById('pfAllocBars').innerHTML = allocHtml;
+}
+
+function exportPortfolio() {
+  var csv = 'Ticker,Sector,Shares,Avg Cost,Current Price,Market Value,P&L,P&L%,Notes\n';
+  portfolio.forEach(function(p){
+    var live = liveCache[p.t];
+    var cur = live ? live.price : '';
+    var mv = (live && cur) ? (cur * p.sh).toFixed(2) : '';
+    var pnl = mv ? (mv - p.cost * p.sh).toFixed(2) : '';
+    var pct = pnl ? ((pnl / (p.cost * p.sh)) * 100).toFixed(2) : '';
+    csv += [p.t, p.sec, p.sh, p.cost, cur, mv, pnl, pct, '"' + (p.notes||'') + '"'].join(',') + '\n';
+  });
+  var blob = new Blob([csv], {type:'text/csv'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'dead-quiet-portfolio-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+
+// ═══════════════════════════════════════════════════
+// LIVE DATA ENGINE
+// ═══════════════════════════════════════════════════
+var liveCache = {};
+var fxCache = {};
+var macroCache = {};
+var LIVE_INTERVAL = null;
+var BACKEND_URL = 'http://127.0.0.1:8765';
+var useBackend = false;
+var ws = null;
+
+function setStatus(state, msg) {
+  var dot = document.getElementById('liveDot');
+  var txt = document.getElementById('liveStatusTxt');
+  dot.className = 'live-dot ' + state;
+  txt.textContent = msg;
+}
+
+// Apply quote data to all price elements across tabs
+function applyQuotes(quotes) {
+  Object.values(quotes).forEach(function(q){
+    if (!q || !q.ok || q.price == null) return;
+    liveCache[q.ticker] = q;
+    var pSign = q.pct >= 0 ? '+' : '';
+    var pCol = q.pct >= 0 ? 'var(--green)' : 'var(--red)';
+    var pFlat = q.pct === 0 ? 'var(--dim)' : pCol;
+    // Sector tab price cells (sp-XXX, sc-XXX)
+    var sp = document.getElementById('sp-' + q.ticker);
+    var sc = document.getElementById('sc-' + q.ticker);
+    if (sp) sp.textContent = '$' + q.price.toFixed(2);
+    if (sc) { sc.textContent = pSign + q.pct.toFixed(2) + '%'; sc.style.color = pFlat; }
+    // Sector overview cells (sx-XXX)
+    var sx = document.getElementById('sx-' + q.ticker);
+    if (sx) { sx.textContent = '$' + q.price.toFixed(2) + ' ' + pSign + q.pct.toFixed(1) + '%'; sx.style.color = pFlat; }
+    // SMID table cells
+    var smt = document.getElementById('smt-' + q.ticker);
+    var smc = document.getElementById('smc-' + q.ticker);
+    if (smt) smt.textContent = '$' + q.price.toFixed(2);
+    if (smc) { smc.textContent = pSign + q.pct.toFixed(2) + '%'; smc.style.color = pFlat; }
+    // Mover cards
+    var mp = document.getElementById('mp-' + q.ticker);
+    var mc = document.getElementById('mc-' + q.ticker);
+    if (mp) { mp.textContent = '$' + q.price.toFixed(2); mp.className = 'lb-val ' + (q.pct >= 0 ? 'pos' : 'neg'); }
+    if (mc) { mc.textContent = pSign + q.pct.toFixed(2) + '%'; mc.className = 'lb-pct ' + (q.pct >= 0 ? 'pos' : 'neg'); }
+  });
+  // Update portfolio with live prices
+  renderPortfolio();
+}
+
+function applyMacro(macro) {
+  macroCache = macro;
+  Object.keys(macro).forEach(function(key){
+    var d = macro[key];
+    if (!d || !d.ok) return;
+    var pSign = d.pct >= 0 ? '+' : '';
+    var pCol = d.pct >= 0 ? 'var(--green)' : 'var(--red)';
+    var valStr = d.value >= 1000 ? d.value.toLocaleString('en', {maximumFractionDigits:0}) : d.value.toFixed(2);
+    // Live bar
+    var lbv = document.getElementById('lb-' + key + '-v');
+    var lbp = document.getElementById('lb-' + key + '-p');
+    if (lbv) { lbv.textContent = valStr; lbv.className = 'lb-val ' + (d.pct >= 0 ? 'pos' : 'neg'); }
+    if (lbp) { lbp.textContent = pSign + d.pct.toFixed(2) + '%'; lbp.className = 'lb-pct ' + (d.pct >= 0 ? 'pos' : 'neg'); }
+    // Macro tab KPIs
+    var mk = document.getElementById('mk-' + key);
+    var mkp = document.getElementById('mkp-' + key);
+    if (mk) mk.textContent = valStr;
+    if (mkp) { mkp.textContent = pSign + d.pct.toFixed(2) + '%'; mkp.className = 'mk-pct ' + (d.pct >= 0 ? 'pos' : 'neg'); }
+  });
+}
+
+function applyFx(fx) {
+  if (!fx || !fx.ok) return;
+  fxCache = fx.rates || {};
+  Object.keys(fxCache).forEach(function(curr){
+    var rate = fxCache[curr];
+    var el = document.getElementById('fx-' + curr);
+    var el2 = document.getElementById('fxd-' + curr);
+    var str = curr === 'JPY' ? rate.toFixed(2) : rate.toFixed(4);
+    if (el) el.textContent = str;
+    if (el2) el2.textContent = str;
+  });
+}
+
+// Build ticker tape
+function buildTape(quotes) {
+  var track = document.getElementById('tapeTrack');
+  if (!track) return;
+  var tickers = Object.keys(quotes);
+  if (tickers.length === 0) return;
+  var html = '';
+  // Build twice for seamless loop
+  for (var pass = 0; pass < 2; pass++) {
+    tickers.forEach(function(t){
+      var q = quotes[t];
+      if (!q || !q.price) return;
+      var pSign = q.pct >= 0 ? '+' : '';
+      var pCol = q.pct >= 0 ? 'var(--green)' : 'var(--red)';
+      html += '<div class="tape-item"><span class="tape-sym">' + t + '</span><span class="tape-price">$' + q.price.toFixed(2) + '</span><span class="tape-chg" style="color:' + pCol + ';">' + pSign + q.pct.toFixed(2) + '%</span></div>';
+    });
+  }
+  track.innerHTML = html;
+  // Adjust animation duration based on content width
+  setTimeout(function(){
+    var w = track.scrollWidth / 2;
+    var dur = Math.max(40, w / 120);
+    track.style.animationDuration = dur + 's';
+  }, 100);
+}
+
+// Try WebSocket (backend v2)
+function tryWebSocket() {
+  try {
+    ws = new WebSocket('ws://127.0.0.1:8765/ws/prices');
+    ws.onopen = function(){ useBackend = true; setStatus('live', '● LIVE · Backend v2'); };
+    ws.onmessage = function(e){
+      var msg = JSON.parse(e.data);
+      if (msg.type === 'quotes') {
+        var map = {};
+        msg.data.forEach(function(q){ if(q.ok) map[q.ticker] = q; });
+        applyQuotes(map);
+        buildTape(map);
+        setStatus('live', '● LIVE · WS · ' + new Date().toLocaleTimeString());
+      } else if (msg.type === 'macro') {
+        applyMacro(msg.data);
+      } else if (msg.type === 'fx') {
+        applyFx(msg.data);
+      }
+    };
+    ws.onerror = function(){ useBackend = false; fetchViaProxy(); };
+    ws.onclose = function(){ if(useBackend){ setStatus('err','Backend closed — using proxy'); } useBackend = false; };
+  } catch(e) { useBackend = false; fetchViaProxy(); }
+}
+
+// Try REST backend for macro + FX
+async function fetchBackendMacro() {
+  try {
+    var r = await fetch(BACKEND_URL + '/macro', {signal: AbortSignal.timeout(4000)});
+    if (r.ok) { var d = await r.json(); applyMacro(d.macro); }
+  } catch(e) { /* silent */ }
+}
+async function fetchBackendFx() {
+  try {
+    var r = await fetch(BACKEND_URL + '/fx?base=USD&symbols=EUR,GBP,JPY,CHF,CAD,AUD', {signal: AbortSignal.timeout(4000)});
+    if (r.ok) { var d = await r.json(); applyFx(d); }
+  } catch(e) {
+    // Fallback: direct frankfurter.app from browser
+    try {
+      var r2 = await fetch('https://api.frankfurter.app/latest?from=USD&to=EUR,GBP,JPY,CHF,CAD,AUD');
+      if (r2.ok) { var d2 = await r2.json(); applyFx({ok:true, rates:d2.rates}); }
+    } catch(e2) { /* offline */ }
+  }
+}
+
+// Yahoo Finance proxy fallback
+async function fetchViaProxy() {
+  setStatus('loading', 'Loading prices…');
+  var tickers = SMID_STOCKS.map(function(s){ return s.t; });
+  var macroTickers = ['^VIX','^TNX','CL=F','GC=F','^GSPC','IWM'];
+  var allTickers = tickers.concat(macroTickers);
+  var syms = allTickers.map(encodeURIComponent).join(',');
+  var yhUrl = 'https://query1.finance.yahoo.com/v7/finance/quote?symbols=' + allTickers.join(',') + '&fields=regularMarketPrice,regularMarketChangePercent,shortName';
+  var proxies = [
+    'https://corsproxy.io/?' + encodeURIComponent(yhUrl),
+    'https://api.allorigins.win/raw?url=' + encodeURIComponent(yhUrl),
+    yhUrl
+  ];
+  var json = null;
+  for (var i = 0; i < proxies.length; i++) {
+    try {
+      var resp = await fetch(proxies[i], {signal: AbortSignal.timeout(7000)});
+      if (resp.ok) { json = await resp.json(); }
+      if (json && json.quoteResponse && json.quoteResponse.result && json.quoteResponse.result.length > 0) break;
+      json = null;
+    } catch(e) { json = null; }
+  }
+  if (!json) { setStatus('err', 'Offline — run backend for live data'); return; }
+  var quotes = {};
+  var macro = {};
+  var macroMap = {'^VIX':'VIX','^TNX':'TNX','CL=F':'WTI','GC=F':'GOLD','^GSPC':'SPX','IWM':'IWM'};
+  (json.quoteResponse.result || []).forEach(function(q){
+    var sym = q.symbol;
+    var price = q.regularMarketPrice;
+    var pct = q.regularMarketChangePercent || 0;
+    if (price == null) return;
+    if (macroMap[sym]) {
+      macro[macroMap[sym]] = {label:macroMap[sym], value:price, pct:pct, ok:true};
+    } else {
+      quotes[sym] = {ticker:sym, price:price, pct:pct, ok:true};
+    }
+  });
+  applyQuotes(quotes);
+  applyMacro(macro);
+  buildTape(quotes);
+  setStatus('live', 'Proxy · ' + new Date().toLocaleTimeString());
+}
+
+async function initLiveData() {
+  setStatus('loading', 'Connecting…');
+  // Try backend health check first
+  try {
+    var r = await fetch(BACKEND_URL + '/health', {signal: AbortSignal.timeout(1500)});
+    if (r.ok) {
+      tryWebSocket();
+      fetchBackendMacro();
+      fetchBackendFx();
+      return;
+    }
+  } catch(e) { /* backend not running */ }
+  // Backend offline — use proxy
+  fetchViaProxy();
+  fetchBackendFx(); // Direct frankfurter.app from browser (no CORS issue)
+  if (!LIVE_INTERVAL) {
+    LIVE_INTERVAL = setInterval(fetchViaProxy, 60000);
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', function(){
+  updateRegime();
+  renderSmidTable(SMID_STOCKS);
+  renderPortfolio();
+  // Start live data after a short delay (allows page to render first)
+  setTimeout(initLiveData, 1200);
+});
+</script>
+</body>
+</html>

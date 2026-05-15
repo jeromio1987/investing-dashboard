@@ -1,0 +1,25 @@
+[package]
+name    = "investing-dashboard"
+version = "2.0.0"
+description = "Personal Investing Dashboard — Hype Cycle & Deep Dive 2026"
+authors = ["Jerome Van der Pluym"]
+license = "MIT"
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "1.5", features = [] }
+
+[dependencies]
+tauri = { version = "1.7", features = [
+  "shell-open",
+  "fs-read-file",
+  "fs-write-file",
+  "fs-exists",
+  "path-all",
+] }
+serde       = { version = "1", features = ["derive"] }
+serde_json  = "1"
+
+[features]
+default         = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]

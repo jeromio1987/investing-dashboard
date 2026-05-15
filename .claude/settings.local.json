@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/jerom/AppData/Local/**)",
+      "Read(//c/Users/jerom/.config/gh/**)",
+      "Read(//c/Users/jerom/AppData/Roaming/**)",
+      "Read(//c/Users/jerom/**)",
+      "Read(//c/Program Files/Git/etc/**)"
+    ]
+  }
+}
