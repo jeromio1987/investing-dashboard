@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useDashboard } from '../context/DashboardContext.jsx';
+import { API_BASE } from '../config/api.js';
 
 function drawPayoff(canvas, cur, bP, bPr, mP, mPr, rP, rPr) {
   if (!canvas) return;
@@ -94,7 +95,7 @@ export default function EVCalculator({ isActive }) {
     if (!isActive) return;
     setOverrideAck(false);
     const ctrl = new AbortController();
-    fetch('http://localhost:5000/api/readiness', { signal: ctrl.signal })
+    fetch(`${API_BASE}/api/readiness`, { signal: ctrl.signal })
       .then(r => r.json())
       .then(d => setReadiness(d.available ? d : null))
       .catch(() => setReadiness(null)); // MY PENS offline — silent fail

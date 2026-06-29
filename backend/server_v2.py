@@ -26,6 +26,7 @@ Endpoints:
   DELETE /portfolio/{id}                 → remove holding
   GET  /portfolio/snapshot               → enriched holdings, totals, daily P&L %, 30d chart, allocation by type
   GET  /verdict                          → finance rule warnings
+  GET  /api/readiness                    → health gate from cross_app.daily_snapshot (MY PENS bridge)
   POST /cron/daily-cross-app             → write cross_app.daily_snapshot (Bearer CRON_SECRET)
   WS   /ws/prices                        → streaming: stocks + fx + macro every 30s
 
@@ -45,7 +46,7 @@ import string
 import re
 import time as time_module
 from collections import Counter
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import Any, Optional
 from urllib.parse import quote
 from zoneinfo import ZoneInfo
@@ -2252,6 +2253,97 @@ async def game_player_achievements(player_id: str):
             break
 
     return {"ok": True, "badges": badges, "source": "server"}
+
+
+# ── /api/readiness (MY PENS → cross_app bridge) ───────────────────────────────
+
+def _readiness_label(score: float) -> str:
+    if score >= 80:
+        return "Full recovery"
+    if score >= 65:
+        return "Good shape"
+    if score >= 50:
+        return "Reduced capacity"
+    if score >= 35:
+        return "Compromised"
+    return "Poor"
+
+
+def _readiness_from_snapshot(row: dict[str, Any]) -> dict[str, Any]:
+    sleep_score = row.get("sleep_score")
+    hrv_readiness = row.get("hrv_readiness")
+    sleep_hours = row.get("sleep_hours")
+    sleep_quality = row.get("sleep_quality")
+    sleep_hrv = row.get("sleep_hrv") or row.get("hrv")
+
+    if sleep_score is None and sleep_hours is not None and sleep_quality is not None:
+        hours_score = min(1.0, float(sleep_hours) / 8.0) * 60.0
+        quality_score = ((float(sleep_quality) - 1.0) / 4.0) * 40.0
+        sleep_score = round(hours_score + quality_score)
+
+    if sleep_score is None:
+        return {"connected": True, "available": False, "reason": "No sleep data in cross_app yet"}
+
+    sleep_score = float(sleep_score)
+    hrv_r = float(hrv_readiness) if hrv_readiness is not None else None
+    overall = round(sleep_score * 0.6 + hrv_r * 0.4) if hrv_r is not None else int(sleep_score)
+
+    return {
+        "connected": True,
+        "available": True,
+        "date": row.get("date"),
+        "sleepHours": float(sleep_hours) if sleep_hours is not None else None,
+        "sleepQuality": int(sleep_quality) if sleep_quality is not None else None,
+        "hrv": float(sleep_hrv) if sleep_hrv is not None else None,
+        "sleepScore": int(sleep_score),
+        "hrvReadiness": int(hrv_r) if hrv_r is not None else None,
+        "overallReadiness": overall,
+        "label": _readiness_label(overall),
+        "gate": {
+            "clear": overall >= 65,
+            "caution": 45 <= overall < 65,
+            "reduced": overall < 45,
+        },
+        "kellyMultiplier": 1.0 if overall >= 65 else (0.5 if overall >= 45 else 0.25),
+    }
+
+
+async def _cross_app_today_row() -> dict[str, Any] | None:
+    if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
+        return None
+    today = datetime.now(timezone.utc).date().isoformat()
+    base = f"{SUPABASE_URL}/rest/v1/daily_snapshot"
+    headers = {
+        "apikey": SUPABASE_SERVICE_ROLE_KEY,
+        "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}",
+        "Accept-Profile": "cross_app",
+    }
+    try:
+        async with httpx.AsyncClient() as client:
+            r = await client.get(
+                f"{base}?date=eq.{today}&select=*",
+                headers=headers,
+                timeout=15.0,
+            )
+            if r.status_code != 200:
+                return None
+            rows = r.json()
+            return rows[0] if isinstance(rows, list) and rows else None
+    except Exception as exc:
+        log.warning("cross_app today row failed: %s", exc)
+        return None
+
+
+@app.get("/api/readiness")
+async def api_readiness():
+    row = await _cross_app_today_row()
+    if not row:
+        return {
+            "connected": bool(SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY),
+            "available": False,
+            "reason": "No cross_app row for today — log sleep in MY PENS or run migration",
+        }
+    return _readiness_from_snapshot(row)
 
 
 # ── /health ───────────────────────────────────────────────────────────────────
