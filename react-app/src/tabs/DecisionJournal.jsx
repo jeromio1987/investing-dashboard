@@ -6,7 +6,8 @@ const EMOTIONS   = ['Neutral','Confident','Anxious','FOMO','Contrarian'];
 const CAT_TYPES  = ['Earnings','Macro Shift','Technicals','Thesis Change','Catalyst','Other'];
 const CONVICTIONS= [1,2,3,4,5];
 
-const STATUS_COLORS = { open: '#60a5fa', win: '#4ade80', loss: '#f87171', partial: '#fbbf24', 'n/a': '#64748b' };
+const STATUS_COLORS = { open: '#60a5fa', win: '#4ade80', loss: '#f87171', scratch: '#94a3b8', partial: '#fbbf24', 'n/a': '#64748b' };
+const OUTCOMES = ['win', 'loss', 'scratch'];
 const ACTION_COLORS = { BUY:'#4ade80', ADD:'#34d399', REDUCE:'#fbbf24', SELL:'#f87171', PASS:'#64748b' };
 
 function ConvBar({ val }) {
@@ -48,31 +49,60 @@ export default function DecisionJournal({ isActive }) {
         catDate: catDate || null,
         thesis, invalid, emotion,
         status: 'open',
-        outcome: null, exitPrice: null, thesisCorrect: null,
+        outcome: 'open', exitPrice: null, exitReason: null, exitDate: null, returnPct: null, thesisCorrect: null,
       }
     });
     setTicker(''); setPrice(''); setThesis(''); setInvalid(''); setCatDate('');
   }
 
   function handleResolve(entry) {
-    const outcome   = window.prompt(`Outcome for ${entry.ticker}? (win/loss/partial)`, 'win');
-    if (!outcome) return;
-    const exitPrice = parseFloat(window.prompt('Exit price ($)?') || '0') || null;
-    const tc        = window.confirm('Was your original thesis correct?');
+    const outcomeRaw = window.prompt(`Outcome for ${entry.ticker}? (win/loss/scratch)`, 'win');
+    if (!outcomeRaw) return;
+    const outcome = outcomeRaw.trim().toLowerCase();
+    if (!OUTCOMES.includes(outcome)) { alert('Outcome must be win, loss, or scratch.'); return; }
+    const exitReason  = window.prompt('Exit reason? (e.g. thesis played out, stopped out, thesis invalidated)', '') || null;
+    const exitDate    = window.prompt('Exit date (YYYY-MM-DD)?', new Date().toISOString().slice(0, 10)) || new Date().toISOString().slice(0, 10);
+    const returnRaw   = window.prompt('Return % (e.g. 12.5 or -8)?', '');
+    const returnPct   = returnRaw !== null && returnRaw !== '' ? parseFloat(returnRaw) : null;
+    const exitPrice   = parseFloat(window.prompt('Exit price ($)? (optional)') || '0') || null;
+    const tc          = window.confirm('Was your original thesis correct?');
     dispatch({
       type: 'JOURNAL_RESOLVE',
       id: entry.id,
-      update: { status: outcome, exitPrice, thesisCorrect: tc }
+      update: { status: outcome, outcome, exitReason, exitDate, returnPct, exitPrice, thesisCorrect: tc }
     });
   }
 
-  const resolved = entries.filter(e => e.status !== 'open');
-  const wins     = entries.filter(e => e.status === 'win').length;
-  const losses   = entries.filter(e => e.status === 'loss').length;
-  const winRate  = resolved.length > 0 ? (wins / resolved.length * 100).toFixed(0) : '—';
-  const thesisAcc = resolved.filter(e => e.thesisCorrect !== null);
+  const resolved  = entries.filter(e => e.status !== 'open');
+  const wins      = entries.filter(e => e.status === 'win').length;
+  const losses    = entries.filter(e => e.status === 'loss').length;
+  const scratches = entries.filter(e => e.status === 'scratch').length;
+  // Win rate excludes scratches/open (standard convention: wins / decided trades)
+  const winRate  = (wins + losses) > 0 ? (wins / (wins + losses) * 100).toFixed(0) : '—';
+  const thesisAcc = resolved.filter(e => e.thesisCorrect !== null && e.thesisCorrect !== undefined);
   const thesisRight = thesisAcc.filter(e => e.thesisCorrect).length;
   const thesisRate = thesisAcc.length > 0 ? (thesisRight / thesisAcc.length * 100).toFixed(0) : '—';
+
+  const holdDurationsDays = resolved
+    .filter(e => e.exitDate && e.date)
+    .map(e => (new Date(e.exitDate) - new Date(e.date)) / 86400000)
+    .filter(d => Number.isFinite(d) && d >= 0);
+  const avgHoldDays = holdDurationsDays.length > 0
+    ? (holdDurationsDays.reduce((a, b) => a + b, 0) / holdDurationsDays.length).toFixed(1)
+    : '—';
+
+  const byThesisType = {};
+  resolved.forEach(e => {
+    const t = e.catType || 'Other';
+    byThesisType[t] = byThesisType[t] || { win: 0, loss: 0, scratch: 0 };
+    if (e.status === 'win') byThesisType[t].win += 1;
+    else if (e.status === 'loss') byThesisType[t].loss += 1;
+    else if (e.status === 'scratch') byThesisType[t].scratch += 1;
+  });
+  const byThesisTypeRows = Object.entries(byThesisType).map(([type, s]) => {
+    const decided = s.win + s.loss;
+    return { type, ...s, rate: decided > 0 ? (s.win / decided * 100).toFixed(0) : '—' };
+  });
 
   const filtered = entries.filter(e =>
     filter === 'all' || e.status === filter || e.catType === filter
@@ -102,6 +132,53 @@ export default function DecisionJournal({ isActive }) {
             </div>
           ))}
         </div>
+
+        {/* Outcomes summary */}
+        {resolved.length > 0 && (
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: 14, marginBottom: 16 }}>
+            <div style={{ fontFamily: 'Syne', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: 10 }}>
+              📊 Outcomes Summary
+            </div>
+            <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginBottom: byThesisTypeRows.length ? 12 : 0 }}>
+              <div>
+                <div className="dj-stat-val" style={{ color: 'var(--green)' }}>{winRate}%</div>
+                <div className="dj-stat-lbl">Win rate (overall)</div>
+              </div>
+              <div>
+                <div className="dj-stat-val" style={{ color: 'var(--blue)' }}>{avgHoldDays}{avgHoldDays !== '—' ? 'd' : ''}</div>
+                <div className="dj-stat-lbl">Avg hold</div>
+              </div>
+              <div>
+                <div className="dj-stat-val" style={{ color: '#94a3b8' }}>{scratches}</div>
+                <div className="dj-stat-lbl">Scratches</div>
+              </div>
+            </div>
+            {byThesisTypeRows.length > 0 && (
+              <table style={{ width: '100%', fontSize: '0.65rem', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ color: 'var(--text-dim)', textAlign: 'left' }}>
+                    <th style={{ padding: '4px 6px' }}>Thesis Type</th>
+                    <th style={{ padding: '4px 6px' }}>W</th>
+                    <th style={{ padding: '4px 6px' }}>L</th>
+                    <th style={{ padding: '4px 6px' }}>Scratch</th>
+                    <th style={{ padding: '4px 6px' }}>Win Rate</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {byThesisTypeRows.map(r => (
+                    <tr key={r.type} style={{ borderTop: '1px solid var(--border)' }}>
+                      <td style={{ padding: '4px 6px' }}>{r.type}</td>
+                      <td style={{ padding: '4px 6px', color: 'var(--green)' }}>{r.win}</td>
+                      <td style={{ padding: '4px 6px', color: 'var(--red)' }}>{r.loss}</td>
+                      <td style={{ padding: '4px 6px', color: 'var(--text-dim)' }}>{r.scratch}</td>
+                      <td style={{ padding: '4px 6px', fontWeight: 700 }}>{r.rate}{r.rate !== '—' ? '%' : ''}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
 
         {/* Entry form */}
         <div className="dj-form">
@@ -169,7 +246,7 @@ export default function DecisionJournal({ isActive }) {
 
         {/* Filter bar */}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
-          {['all','open','win','loss','partial',...CAT_TYPES].map(f => (
+          {['all','open','win','loss','scratch',...CAT_TYPES].map(f => (
             <button key={f} className={`dj-filter-btn${filter === f ? ' active' : ''}`}
               onClick={() => setFilter(f)}
               style={{ fontSize: '0.6rem', padding: '3px 8px', borderRadius: 6, border: `1px solid ${filter === f ? 'var(--yellow)' : 'var(--border)'}`, background: filter === f ? 'var(--surface)' : 'transparent', color: filter === f ? 'var(--yellow)' : 'var(--text-dim)', cursor: 'pointer' }}>
@@ -218,9 +295,18 @@ export default function DecisionJournal({ isActive }) {
                   {entry.invalid}
                 </div>
               )}
-              {entry.status !== 'open' && entry.exitPrice && (
-                <div style={{ fontSize: '0.65rem', color: 'var(--text-dim)', marginTop: 6 }}>
-                  Exit: ${entry.exitPrice} · Thesis was {entry.thesisCorrect ? <span style={{ color: 'var(--green)' }}>✓ correct</span> : <span style={{ color: 'var(--red)' }}>✗ wrong</span>}
+              {entry.status !== 'open' && (
+                <div style={{ fontSize: '0.65rem', color: 'var(--text-dim)', marginTop: 6, lineHeight: 1.6 }}>
+                  Exit{entry.exitDate ? ` ${entry.exitDate}` : ''}{entry.exitPrice ? ` @ $${entry.exitPrice}` : ''}
+                  {entry.returnPct != null && (
+                    <span className={entry.returnPct >= 0 ? 'dj-pnl-positive' : 'dj-pnl-negative'} style={{ marginLeft: 6 }}>
+                      {entry.returnPct >= 0 ? '+' : ''}{entry.returnPct}%
+                    </span>
+                  )}
+                  {entry.exitReason && <span> · {entry.exitReason}</span>}
+                  {entry.thesisCorrect != null && (
+                    <span> · Thesis was {entry.thesisCorrect ? <span style={{ color: 'var(--green)' }}>✓ correct</span> : <span style={{ color: 'var(--red)' }}>✗ wrong</span>}</span>
+                  )}
                 </div>
               )}
             </div>

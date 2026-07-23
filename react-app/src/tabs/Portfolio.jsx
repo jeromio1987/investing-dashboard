@@ -9,28 +9,29 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { API_BASE } from '../config/api.js';
+import sectorsData from '../data/sectors.json';
 
 const SECTORS = [
-  'Uranium/Nuclear', 'AI Infrastructure', 'LNG/Gas Infra', 'Energy E&P',
-  'Defence SMID', 'Silver Miners', 'Gene Editing', 'Bio-AI',
+  ...sectorsData.scores.map((s) => s.name),
   'Utilities/Power', 'Financials', 'Healthcare', 'Other',
 ];
 const SECTOR_COLORS = {
-  'Uranium/Nuclear':   '#c084fc',
+  'Uranium / Nuclear': '#c084fc',
   'AI Infrastructure': '#fbbf24',
-  'LNG/Gas Infra':     '#2dd4bf',
-  'Energy E&P':        '#fb923c',
-  'Defence SMID':      '#f97316',
-  'Silver Miners':     '#a78bfa',
-  'Gene Editing':      '#60a5fa',
-  'Bio-AI':            '#f87171',
-  'Utilities/Power':   '#4ade80',
-  'Financials':        '#34d399',
-  'Healthcare':        '#38bdf8',
-  'Other':             '#64748b',
+  'LNG / Gas Midstream': '#2dd4bf',
+  'Energy E&P SMID': '#fb923c',
+  'Defence SMID': '#f97316',
+  'Silver Miners': '#a78bfa',
+  'Gene Editing': '#60a5fa',
+  'Bio-AI Drug Discovery': '#f87171',
+  Psychedelics: '#f472b6',
+  'Aviation MRO': '#94a3b8',
+  'Utilities/Power': '#4ade80',
+  Financials: '#34d399',
+  Healthcare: '#38bdf8',
+  Other: '#64748b',
 };
-const SMID_SECS = ['Uranium/Nuclear', 'AI Infrastructure', 'LNG/Gas Infra', 'Energy E&P', 'Defence SMID', 'Silver Miners', 'Gene Editing', 'Bio-AI'];
-
+const SMID_SECS = sectorsData.scores.map((s) => s.name);
 function squarify(items, x, y, w, h) {
   if (!items.length) return [];
   const total = items.reduce((s, i) => s + i.value, 0);

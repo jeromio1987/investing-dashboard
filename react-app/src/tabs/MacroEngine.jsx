@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { REGIMES } from '../data/regimes.js';
+import regimesFile from '../data/regimes.json';
+const REGIMES = regimesFile.regimes;
 
 const FED_OPTIONS = [
   { value: 'dovish',  label: '🕊 Dovish — Fed cutting / on hold' },

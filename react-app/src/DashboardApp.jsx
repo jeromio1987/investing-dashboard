@@ -12,8 +12,12 @@ import Portfolio from './tabs/Portfolio.jsx';
 import EVCalculator from './tabs/EVCalculator.jsx';
 import DecisionJournal from './tabs/DecisionJournal.jsx';
 import Correlation from './tabs/Correlation.jsx';
+import PropertyMoving from './tabs/PropertyMoving.jsx';
+import TradeImpulseWidget from './components/TradeImpulseWidget.jsx';
 
 import { API_BASE } from './config/api.js';
+import watchlistData from './data/watchlist.json';
+import sectorsData from './data/sectors.json';
 
 const TABS = [
   { id: 'ledger', label: 'Hype Ledger' },
@@ -25,13 +29,12 @@ const TABS = [
   { id: 'ev', label: '⚖️ EV Calc' },
   { id: 'journal', label: '📓 Decision Journal' },
   { id: 'corr', label: '🕸 Correlation' },
+  { id: 'property', label: '🏠 Cadix / Moving' },
 ];
 
-const WATCHLIST = [
-  'NXE', 'UUUU', 'CCJ', 'POWL', 'VRT', 'GEV',
-  'NOG', 'COP', 'XOM', 'KNTK', 'LNG', 'WMB',
-  'BEAM', 'NTLA', 'RXRX', 'IONQ', 'NET', 'GLD', 'SLV',
-];
+const WATCHLIST = watchlistData.tickers;
+const FILTER_KEY = 'investing_care_filter';
+const THESIS_AS_OF = sectorsData.as_of || watchlistData.as_of;
 
 function TickerTape({ quotes }) {
   const items = Object.values(quotes).filter(q => q.ok !== false);
@@ -80,8 +83,23 @@ function ConnectionBadge({ connected, mode }) {
 function InnerApp() {
   const [activeTab, setActiveTab] = useState('ledger');
   const [feedTickers, setFeedTickers] = useState(WATCHLIST);
+  const [careFilter, setCareFilter] = useState(() => {
+    try {
+      return localStorage.getItem(FILTER_KEY) || 'all';
+    } catch {
+      return 'all';
+    }
+  });
   const { dispatch } = useDashboard();
   const { quotes, connected, mode } = useLiveData(feedTickers);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(FILTER_KEY, careFilter);
+    } catch {
+      /* ignore */
+    }
+  }, [careFilter]);
 
   useEffect(() => {
     let cancelled = false;
@@ -113,12 +131,64 @@ function InnerApp() {
         <h1>
           Sectors — <span>Hype Cycle &amp; Deep Dive 2026</span>
           <ConnectionBadge connected={connected} mode={mode} />
+          <span
+            title="Edit data/sectors.json as_of to refresh"
+            style={{
+              marginLeft: 12,
+              fontSize: '0.62rem',
+              fontWeight: 600,
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+              color: 'var(--yellow)',
+              border: '1px solid var(--yellow)',
+              borderRadius: 4,
+              padding: '3px 8px',
+              verticalAlign: 'middle',
+            }}
+          >
+            Thesis frozen: {THESIS_AS_OF}
+          </span>
         </h1>
         <p className="subtitle">
           Personal investment framework · {new Date().getFullYear()} ·
           Not financial advice ·{' '}
           <Link to="/fantasy" style={{ color: 'var(--yellow)' }}>Fantasy competition</Link>
         </p>
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: 8,
+            marginTop: 10,
+          }}
+        >
+          <span style={{ fontSize: '0.68rem', color: 'var(--text-dim)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            Today I care about…
+          </span>
+          {(sectorsData.filters || []).map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              onClick={() => {
+                setCareFilter(f.id);
+                if (f.id !== 'all') setActiveTab('sectors');
+              }}
+              style={{
+                fontSize: '0.68rem',
+                fontWeight: 600,
+                padding: '5px 12px',
+                borderRadius: 4,
+                cursor: 'pointer',
+                border: careFilter === f.id ? '1px solid var(--teal)' : '1px solid var(--border)',
+                background: careFilter === f.id ? 'rgba(45, 212, 191, 0.12)' : 'transparent',
+                color: careFilter === f.id ? 'var(--teal)' : 'var(--text-dim)',
+              }}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
       </header>
 
       <div
@@ -180,12 +250,15 @@ function InnerApp() {
         <HypeCycle isActive={activeTab === 'hype'} />
         <MacroEngine isActive={activeTab === 'macro'} />
         <SmidAlpha isActive={activeTab === 'smid'} quotes={quotes} />
-        <SmidSectors isActive={activeTab === 'sectors'} quotes={quotes} />
+        <SmidSectors isActive={activeTab === 'sectors'} quotes={quotes} filter={careFilter} />
         <Portfolio isActive={activeTab === 'portfolio'} />
         <EVCalculator isActive={activeTab === 'ev'} />
         <DecisionJournal isActive={activeTab === 'journal'} />
         <Correlation isActive={activeTab === 'corr'} />
+        <PropertyMoving isActive={activeTab === 'property'} />
       </div>
+
+      <TradeImpulseWidget />
     </>
   );
 }

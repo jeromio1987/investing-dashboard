@@ -1,0 +1,289 @@
+{
+  "as_of": "2026-07-20",
+  "title": "SMID Sector Map",
+  "subtitle": "Where the Small/Mid Edge Lives by Theme",
+  "filters": [
+    { "id": "all", "label": "All" },
+    { "id": "energy", "label": "Energy" },
+    { "id": "tech", "label": "Tech" },
+    { "id": "commodities", "label": "Commodities" },
+    { "id": "uranium", "label": "Uranium" }
+  ],
+  "scores": [
+    {
+      "id": "uranium",
+      "name": "Uranium / Nuclear",
+      "filter": "uranium",
+      "hype": "Peak",
+      "hypeColor": "yellow",
+      "macro": 3,
+      "smid": 3,
+      "overall": "Strong Buy",
+      "overallColor": "green",
+      "keyNames": "NXE, UUUU, DNN"
+    },
+    {
+      "id": "aiinfra",
+      "name": "AI Infrastructure",
+      "filter": "tech",
+      "hype": "Rising to Peak",
+      "hypeColor": "green",
+      "macro": 3,
+      "smid": 3,
+      "overall": "Strong Buy",
+      "overallColor": "green",
+      "keyNames": "POWL, AAON, NVEC"
+    },
+    {
+      "id": "lng",
+      "name": "LNG / Gas Midstream",
+      "filter": "energy",
+      "hype": "Peak",
+      "hypeColor": "yellow",
+      "macro": 3,
+      "smid": 2,
+      "overall": "Buy",
+      "overallColor": "yellow",
+      "keyNames": "KNTK, AM"
+    },
+    {
+      "id": "ep",
+      "name": "Energy E&P SMID",
+      "filter": "energy",
+      "hype": "Early Majority",
+      "hypeColor": "yellow",
+      "macro": 2,
+      "smid": 3,
+      "overall": "Buy",
+      "overallColor": "yellow",
+      "keyNames": "NOG, CIVI, MTDR"
+    },
+    {
+      "id": "defence",
+      "name": "Defence SMID",
+      "filter": "tech",
+      "hype": "Rising to Peak",
+      "hypeColor": "green",
+      "macro": 3,
+      "smid": 2,
+      "overall": "Buy",
+      "overallColor": "yellow",
+      "keyNames": "KTOS, BWXT"
+    },
+    {
+      "id": "silver",
+      "name": "Silver Miners",
+      "filter": "commodities",
+      "hype": "Rising",
+      "hypeColor": "yellow",
+      "macro": 2,
+      "smid": 3,
+      "overall": "Buy",
+      "overallColor": "yellow",
+      "keyNames": "AG, SVM, HL"
+    },
+    {
+      "id": "geneedit",
+      "name": "Gene Editing",
+      "filter": "tech",
+      "hype": "Trough",
+      "hypeColor": "blue",
+      "macro": 1,
+      "smid": 3,
+      "overall": "Selective",
+      "overallColor": "teal",
+      "keyNames": "BEAM, NTLA, ARVN"
+    },
+    {
+      "id": "bioai",
+      "name": "Bio-AI Drug Discovery",
+      "filter": "tech",
+      "hype": "Rising",
+      "hypeColor": "green",
+      "macro": 2,
+      "smid": 3,
+      "overall": "Selective",
+      "overallColor": "teal",
+      "keyNames": "RXRX, SDGR"
+    },
+    {
+      "id": "psych",
+      "name": "Psychedelics",
+      "filter": "tech",
+      "hype": "Trough",
+      "hypeColor": "blue",
+      "macro": 1,
+      "smid": 2,
+      "overall": "Watch",
+      "overallColor": "dim",
+      "keyNames": "MNMD, CMPS"
+    },
+    {
+      "id": "mro",
+      "name": "Aviation MRO",
+      "filter": "tech",
+      "hype": "Early Majority",
+      "hypeColor": "yellow",
+      "macro": 2,
+      "smid": 1,
+      "overall": "Watch",
+      "overallColor": "dim",
+      "keyNames": "HEI, TDG"
+    }
+  ],
+  "sectors": [
+    {
+      "id": "uranium",
+      "label": "Uranium",
+      "emoji": "⚛️",
+      "filter": "uranium",
+      "thesis": "Double demand shock — AI data centres need 24/7 baseload power, only nuclear delivers it without carbon. Supply structurally constrained: new mines take 10–15 years. No longer hype — real scarcity. Utilities are signing long-term contracts at $70–80/lb. The SMID edge: NXE and UUUU have thin analyst coverage (3–5) and binary catalysts (permitting, production updates).",
+      "catalysts": "Kazatomprom production guidance (quarterly) · US utility contract announcements · NRC/DOE permitting decisions · Uranium spot price crossing $100/lb · Any data centre operator announcing nuclear PPA.",
+      "risk": "Permitting delays (biggest risk for NXE Rook I) · Kazakhstan political instability · SMR timelines pushed past 2035 · Spot price correction if China demand slows.",
+      "watchlistTitle": "Uranium SMID Watchlist",
+      "watchlist": [
+        { "name": "NexGen Energy", "ticker": "NXE", "type": "Pure Play", "tag": "uranium", "mcap": "~$3B", "catalyst": "Rook I permitting" },
+        { "name": "Energy Fuels", "ticker": "UUUU", "type": "Pure Play", "tag": "uranium", "mcap": "~$800M", "catalyst": "White Mesa mill expansion" },
+        { "name": "Denison Mines", "ticker": "DNN", "type": "Pure Play", "tag": "uranium", "mcap": "~$1B", "catalyst": "Wheeler River ISR approval" },
+        { "name": "Uranium Royalty", "ticker": "UROY", "type": "Royalty", "tag": "uranium", "mcap": "~$200M", "catalyst": "Royalty stream activation" }
+      ]
+    },
+    {
+      "id": "aiinfra",
+      "label": "AI Infra",
+      "emoji": "🏭",
+      "filter": "tech",
+      "thesis": "AI buildout is not about the model makers — it is about the physical infrastructure they need. Power distribution, thermal management, switchgear, HVAC. POWL builds the switchgear for data centres; AAON builds precision cooling. 3–5 analyst coverage. Earnings calls are the catalyst. These companies have real backlogs, real margins, and the market still underestimates the duration of the buildout.",
+      "catalysts": "Quarterly earnings with backlog guidance · Hyperscaler capex announcements (MSFT, GOOG, AMZN, META) · Power grid upgrade bills (US Infrastructure) · New data centre campus announcements.",
+      "risk": "Hyperscaler capex cut · AI adoption slower than expected · Competition from larger industrial incumbents (Eaton, ABB) · Valuation multiple compression after run.",
+      "watchlistTitle": "AI Infrastructure SMID Watchlist",
+      "watchlist": [
+        { "name": "Powell Industries", "ticker": "POWL", "type": "Switchgear", "tag": "aiinfra", "mcap": "~$3B", "catalyst": "Q backlog guide" },
+        { "name": "AAON Inc.", "ticker": "AAON", "type": "HVAC/Cooling", "tag": "aiinfra", "mcap": "~$5B", "catalyst": "DataCenter segment revenue" },
+        { "name": "Super Micro Computer", "ticker": "SMCI", "type": "Servers", "tag": "aiinfra", "mcap": "~$25B", "catalyst": "Annual filings + guidance" },
+        { "name": "NVIDIA Corp.", "ticker": "NVDA", "type": "GPU/Compute", "tag": "aiinfra", "mcap": "~$3T", "catalyst": "Quarterly revenue guide" }
+      ]
+    },
+    {
+      "id": "lng",
+      "label": "LNG",
+      "emoji": "🔥",
+      "filter": "energy",
+      "thesis": "Best bridge between geopolitics and structural energy demand. Contract-backed cashflows — not dependent on spot LNG price. Europe locked in for decade-long US LNG supply. Kinder Morgan's natural gas network is the domestic backbone. SMID midstream names like KNTK have limited analyst coverage and fee-based revenue. The geopolitical floor is durable.",
+      "catalysts": "European LNG terminal completions · US LNG export capacity additions · Natural gas price floor above $2.50/MMBtu · Russia/Ukraine resolution (removes some premium but validates supply shift).",
+      "risk": "LNG oversupply post-2026 (Australian, Qatari volumes) · Warm European winter reducing storage demand · Rate sensitivity (midstream is duration-exposed) · Cheniere contract renegotiation risk.",
+      "watchlistTitle": "LNG / Midstream Watchlist",
+      "watchlist": [
+        { "name": "Kinetik Holdings", "ticker": "KNTK", "type": "Midstream", "tag": "energy", "mcap": "~$6B", "catalyst": "Permian volume expansion" },
+        { "name": "Antero Midstream", "ticker": "AM", "type": "Midstream", "tag": "energy", "mcap": "~$6B", "catalyst": "FCF + dividend growth" },
+        { "name": "Cheniere Energy", "ticker": "LNG", "type": "LNG Export", "tag": "energy", "mcap": "~$42B", "catalyst": "Contract backlog updates" }
+      ]
+    },
+    {
+      "id": "ep",
+      "label": "E&P",
+      "emoji": "🛢",
+      "filter": "energy",
+      "thesis": "Non-operator model (NOG) gives commodity exposure with acquisition optionality and no operational risk. CIVI and MTDR are pure Permian/DJ Basin plays with FCF inflection at $65+ WTI. These are not growth stories — they are return-of-capital stories. The SMID edge: acquirers (majors) need bolt-ons. NOG and CIVI are ideal targets.",
+      "catalysts": "WTI crude staying above $65 · Quarterly FCF and buyback announcements · M&A activity in Permian Basin · OPEC+ production discipline.",
+      "risk": "WTI below $60 for sustained period · OPEC+ production surge · Demand destruction from global recession · Permian well cost inflation.",
+      "watchlistTitle": "Energy E&P SMID Watchlist",
+      "watchlist": [
+        { "name": "Northern Oil & Gas", "ticker": "NOG", "type": "Non-Op", "tag": "energy", "mcap": "~$4B", "catalyst": "Acquisition + buyback" },
+        { "name": "Civitas Resources", "ticker": "CIVI", "type": "DJ + Permian", "tag": "energy", "mcap": "~$5B", "catalyst": "FCF yield + buyback" },
+        { "name": "Matador Resources", "ticker": "MTDR", "type": "Permian", "tag": "energy", "mcap": "~$6B", "catalyst": "Delaware Basin production" },
+        { "name": "Vital Energy", "ticker": "VTLE", "type": "Permian", "tag": "energy", "mcap": "~$1.5B", "catalyst": "Debt reduction milestones" }
+      ]
+    },
+    {
+      "id": "defence",
+      "label": "Defence",
+      "emoji": "🛡",
+      "filter": "tech",
+      "thesis": "European defence budgets doubling (NATO 2% GDP → structural 3%+). US defence backlog at record levels. SMID plays: KTOS builds low-cost attritable drones — the future of warfare is volume, not platforms. BWXT makes naval nuclear reactors — only supplier, no competition. These are not trading sardines: they have contract-backed multi-year revenue.",
+      "catalysts": "US defence budget reconciliation · European rearmament spending announcements · Drone warfare expansion in Ukraine/Middle East · KTOS Valkyrie production contract · BWXT reactor programme extensions.",
+      "risk": "Geopolitical resolution reducing urgency · US debt ceiling forcing defence cuts · Some SMID names already +150% from lows — entry timing matters · Contract delays in bureaucratic procurement cycles.",
+      "watchlistTitle": "Defence SMID Watchlist",
+      "watchlist": [
+        { "name": "Kratos Defense", "ticker": "KTOS", "type": "Drones", "tag": "defense", "mcap": "~$4B", "catalyst": "Valkyrie contract award" },
+        { "name": "BWX Technologies", "ticker": "BWXT", "type": "Naval Nuclear", "tag": "defense", "mcap": "~$8B", "catalyst": "Submarine programme expansion" },
+        { "name": "Mercury Systems", "ticker": "MRCY", "type": "Electronics", "tag": "defense", "mcap": "~$1.5B", "catalyst": "Margin recovery + backlog" }
+      ]
+    },
+    {
+      "id": "silver",
+      "label": "Silver",
+      "emoji": "🥈",
+      "filter": "commodities",
+      "thesis": "Silver is the asymmetric play within precious metals. Gold/silver ratio historically high (83x vs. 60x long-term average). Industrial demand growing from solar panels and electronics. Fifth year of supply deficit. If gold holds $2,800+, silver re-rates significantly. SMID miners have operating leverage: 10% silver price increase = 30%+ earnings increase for mid-tier miners.",
+      "catalysts": "Gold/silver ratio compression · Solar panel installation volumes (silver paste demand) · Fed rate cuts reducing USD strength · Silver ETF inflows (SLV) · Any industrial shortage signal from LBMA.",
+      "risk": "Gold correction drags silver · Industrial slowdown reduces solar demand · Strong USD · Higher-for-longer rates compressing commodity multiples · Political risk in Mexican/Peruvian mining jurisdictions.",
+      "watchlistTitle": "Silver Miner Watchlist",
+      "watchlist": [
+        { "name": "First Majestic Silver", "ticker": "AG", "type": "Pure Play", "tag": "uranium", "mcap": "~$2B", "catalyst": "Silver spot price + Jerritt Canyon" },
+        { "name": "SilverCorp Metals", "ticker": "SVM", "type": "Pure Play", "tag": "uranium", "mcap": "~$700M", "catalyst": "Ying mine production" },
+        { "name": "Hecla Mining", "ticker": "HL", "type": "Primary Silver", "tag": "uranium", "mcap": "~$3B", "catalyst": "Lucky Friday + Greens Creek output" },
+        { "name": "Pan American Silver", "ticker": "PAAS", "type": "Diversified", "tag": "uranium", "mcap": "~$6B", "catalyst": "Latin America portfolio" }
+      ]
+    },
+    {
+      "id": "geneedit",
+      "label": "Gene Editing",
+      "emoji": "🧬",
+      "filter": "tech",
+      "thesis": "The trough creates opportunity. BEAM, NTLA, ARVN are at or near cash-value after the 2021–2024 biotech destruction. The binary catalyst structure is the SMID edge: interim clinical data on a single programme can double or halve the stock in one session. Position sizing is the entire game. 0.5–1% max, stop at −35%, sell 40% on the spike day.",
+      "catalysts": "BEAM ESCAPE trial interim data · NTLA-2001 Phase I update · ARVN ARV-102 clinical readout · FDA approval of first base-editing or prime-editing therapy · Pharma licensing deal for any platform.",
+      "risk": "Clinical failure (binary wipeout risk) · Safety signal in editing (off-target cuts) · Competition from Intellia or Caribou reducing platform premium · Cash runway (all loss-making — check burn rate vs. cash).",
+      "watchlistTitle": "Gene Editing Watchlist",
+      "watchlist": [
+        { "name": "Beam Therapeutics", "ticker": "BEAM", "type": "Base Editing", "tag": "bioai", "mcap": "~$1.5B", "catalyst": "ESCAPE interim data" },
+        { "name": "Intellia Therapeutics", "ticker": "NTLA", "type": "CRISPR In Vivo", "tag": "bioai", "mcap": "~$1.2B", "catalyst": "NTLA-2001 Phase I" },
+        { "name": "Arvinas", "ticker": "ARVN", "type": "PROTAC", "tag": "bioai", "mcap": "~$1.5B", "catalyst": "ARV-102 neuro data" },
+        { "name": "Kymera Therapeutics", "ticker": "KYMR", "type": "Degrader", "tag": "bioai", "mcap": "~$1.5B", "catalyst": "KT-621 atopic derm P2" }
+      ]
+    },
+    {
+      "id": "bioai",
+      "label": "Bio-AI",
+      "emoji": "🤖",
+      "filter": "tech",
+      "thesis": "AI applied to drug discovery — protein folding, molecular simulation, phenomics. Recursion (RXRX) and Schrödinger (SDGR) are the pure plays. Both loss-making but the platform value is real. RXRX has partnerships with Roche and Bayer. SDGR sells software to every major pharma. The SMID edge: still covered by only 8–12 analysts, data-rich companies that the market does not fully understand yet.",
+      "catalysts": "RXRX Roche/Bayer collaboration milestones · SDGR enterprise software contract announcements · Any FDA-approved drug with AI-discovered structure · Big pharma licensing deal for AI platform · Pipeline candidate entering Phase II.",
+      "risk": "Cash burn — both loss-making, runway matters · AI drug discovery still unproven at Phase III · Competition from in-house big pharma AI teams · Valuation rich vs. near-term revenue.",
+      "watchlistTitle": "Bio-AI Watchlist",
+      "watchlist": [
+        { "name": "Recursion Pharmaceuticals", "ticker": "RXRX", "type": "AI Platform", "tag": "bioai", "mcap": "~$1.5B", "catalyst": "Roche milestone + pipeline data" },
+        { "name": "Schrödinger", "ticker": "SDGR", "type": "Sim Software", "tag": "bioai", "mcap": "~$2B", "catalyst": "Enterprise contract growth" }
+      ]
+    },
+    {
+      "id": "psych",
+      "label": "Psychedelics",
+      "emoji": "🍄",
+      "filter": "tech",
+      "thesis": "Deep in the trough — MDMA therapy FDA rejection in 2024 reset sentiment dramatically. But psilocybin (MNMD, CMPS) is still advancing and the mechanism of action is real. Treatment-resistant depression is a $20B+ market with no good solutions. The SMID edge is patience: position at trough with 0.5–1%, wait for Phase III data. The risk-reward at current valuations is asymmetric if clinical success comes.",
+      "catalysts": "MNMD psilocybin Phase III readout · CMPS COMP360 Phase IIb data · FDA scheduling guidance on psilocybin · Any state-level legalisation (Colorado, Oregon rollout) · Big pharma licensing interest.",
+      "risk": "FDA rejection (happened with MDMA) · Political/regulatory headwinds · Scale challenges (therapy requires trained facilitators, not just a pill) · Cash burn at small companies · Very long catalysts (clinical trials = years).",
+      "watchlistTitle": "Psychedelics Watchlist",
+      "watchlist": [
+        { "name": "Mind Medicine", "ticker": "MNMD", "type": "Psilocybin", "tag": "bioai", "mcap": "~$600M", "catalyst": "MM120 Phase III data" },
+        { "name": "COMPASS Pathways", "ticker": "CMPS", "type": "Psilocybin", "tag": "bioai", "mcap": "~$400M", "catalyst": "COMP360 Phase IIb" }
+      ]
+    },
+    {
+      "id": "mro",
+      "label": "MRO",
+      "emoji": "✈️",
+      "filter": "tech",
+      "thesis": "Aviation recovering structurally post-COVID. OEMs (Boeing, Airbus) cannot meet demand — backlogs are 8–10 years. Older fleets fly longer, MRO benefits most. HEICO and TransDigm are the SMID quality plays: proprietary parts, pricing power, sticky customer relationships. Low hype, stable cashflows, consistent compounding. Not exciting — reliably profitable.",
+      "catalysts": "Boeing 737 MAX production ramp (more planes = more MRO later) · Airline capacity utilisation above 85% · HEICO PMA parts expansion · TransDigm acquisition activity · Air travel demand resilience in recession.",
+      "risk": "Recession reducing air travel · Fuel price spike grounding older aircraft · Boeing quality issues reducing fleet utilisation · Valuation — HEICO and TDG are not cheap.",
+      "watchlistTitle": "Aviation MRO Watchlist",
+      "watchlist": [
+        { "name": "HEICO Corporation", "ticker": "HEI", "type": "PMA Parts", "tag": "defense", "mcap": "~$28B", "catalyst": "PMA market share gains" },
+        { "name": "TransDigm Group", "ticker": "TDG", "type": "Proprietary Parts", "tag": "defense", "mcap": "~$70B", "catalyst": "Acquisition + aftermarket pricing" },
+        { "name": "AAR Corp", "ticker": "AIR", "type": "MRO Services", "tag": "defense", "mcap": "~$2B", "catalyst": "Government contract wins" }
+      ]
+    }
+  ]
+}

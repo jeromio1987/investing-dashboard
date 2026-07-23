@@ -1,0 +1,5 @@
+{
+  "as_of": "2026-07-20",
+  "note": "Live portfolio positions are managed in the Portfolio tab / backend. This file is the static thesis seed — edit here for documentation, not for market orders.",
+  "positions": []
+}

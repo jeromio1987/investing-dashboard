@@ -1,0 +1,1073 @@
+{
+  "as_of": "2026-07-20",
+  "regimes": {
+    "dovish_deesc_strong": {
+      "title": "🟢 Maximum Risk-On — Peak Cycle",
+      "over": [
+        "AI Infra (VRT, POWL, GEV)",
+        "Bio-AI growth (BEAM, NTLA)",
+        "Small-cap energy"
+      ],
+      "under": [
+        "Defensive midstream",
+        "Gold/commodities"
+      ],
+      "hedge": [],
+      "note": "Full risk budget justified. Reduce cash to minimum. Monitor for froth in speculative names.",
+      "color": "rgba(74,222,128,0.12)"
+    },
+    "dovish_deesc_base": {
+      "title": "🟢 Risk-On — Quality Growth Leads",
+      "over": [
+        "AI Infra (VRT, SBGSY)",
+        "Bio-AI picks/shovels (TMO, DHR)",
+        "Energy midstream"
+      ],
+      "under": [
+        "Broad commodities",
+        "Long-duration bonds"
+      ],
+      "hedge": [],
+      "note": "Add to highest-conviction names on any dip. Speculative biotech gets partial allocation.",
+      "color": "rgba(74,222,128,0.10)"
+    },
+    "dovish_base_strong": {
+      "title": "🟢 Broad Risk-On — LNG + AI Sweet Spot",
+      "over": [
+        "LNG (Cheniere)",
+        "AI Infra (VRT)",
+        "Energy majors (XOM, COP)"
+      ],
+      "under": [
+        "Rate-sensitive bonds",
+        "Pure defensives"
+      ],
+      "hedge": [],
+      "note": "Current best-case: cuts + frozen conflict + strong growth. LNG structural + Fed support = ideal.",
+      "color": "rgba(74,222,128,0.10)"
+    },
+    "dovish_base_base": {
+      "title": "🟢 Constructive — LNG + AI Core Positions",
+      "over": [
+        "LNG / Gas infra",
+        "VRT (AI power)",
+        "TMO/DHR (Bio-AI shovels)"
+      ],
+      "under": [
+        "Rate-sensitives",
+        "Broad clean energy ETFs"
+      ],
+      "hedge": [
+        "Small gold position"
+      ],
+      "note": "Solid entry point for core positions. Staged accumulation recommended.",
+      "color": "rgba(74,222,128,0.08)"
+    },
+    "dovish_base_slowing": {
+      "title": "🟡 Selective — Defensives + Quality Growth",
+      "over": [
+        "Midstream pipelines",
+        "LNG contracted",
+        "TMO/DHR"
+      ],
+      "under": [
+        "SMID E&P",
+        "Pure-play speculative"
+      ],
+      "hedge": [
+        "Reduce speculative to minimum"
+      ],
+      "note": "Cuts help but growth drag limits upside. Stick to cash-flow generators.",
+      "color": "rgba(251,191,36,0.08)"
+    },
+    "dovish_base_recession": {
+      "title": "🟠 Stagflation Signal — Hard Assets Only",
+      "over": [
+        "Midstream (defensive)",
+        "LNG contracted income"
+      ],
+      "under": [
+        "All cyclicals",
+        "High-multiple tech",
+        "Bio-AI spec"
+      ],
+      "hedge": [
+        "Gold 5–8%",
+        "Cash 15%+"
+      ],
+      "note": "Forced cuts into recession = stagflationary setup. Commodity supply shock persists vs demand weakness.",
+      "color": "rgba(251,115,61,0.08)"
+    },
+    "dovish_esc_strong": {
+      "title": "🟡 Bifurcated — Hard Assets + Domestic Energy",
+      "over": [
+        "US LNG (Cheniere)",
+        "Midstream",
+        "Defense contractors"
+      ],
+      "under": [
+        "European exposure",
+        "Global supply chains"
+      ],
+      "hedge": [
+        "Gold"
+      ],
+      "note": "Escalation caps P/E expansion even with dovish Fed. Energy security premium builds.",
+      "color": "rgba(251,191,36,0.08)"
+    },
+    "dovish_esc_base": {
+      "title": "🟡 Selective Energy Focus",
+      "over": [
+        "US LNG",
+        "Integrated majors",
+        "Gas infrastructure"
+      ],
+      "under": [
+        "European equities",
+        "Discretionary"
+      ],
+      "hedge": [
+        "5% gold"
+      ],
+      "note": "Escalation + dovish = energy safe haven + Fed support. Mixed signal.",
+      "color": "rgba(251,191,36,0.08)"
+    },
+    "dovish_esc_slowing": {
+      "title": "🟠 Defensive Energy Dominates",
+      "over": [
+        "Midstream",
+        "LNG income",
+        "Integrated majors"
+      ],
+      "under": [
+        "All speculative",
+        "Consumer cyclicals"
+      ],
+      "hedge": [
+        "Gold 8%",
+        "Cash 15%"
+      ],
+      "note": "Three headwinds collide: escalation + slowing + need for cuts. Quality cash flows only.",
+      "color": "rgba(251,115,61,0.08)"
+    },
+    "dovish_esc_recession": {
+      "title": "🔴 Crisis Regime — Preserve Capital",
+      "over": [
+        "Physical gold",
+        "US LNG (contracted)",
+        "Cash"
+      ],
+      "under": [
+        "All equities broadly"
+      ],
+      "hedge": [
+        "Gold 10%+",
+        "Cash 25%+"
+      ],
+      "note": "Escalation + recession + forced cuts = very few safe equity harbors. Cheniere SPA income the only equity bet.",
+      "color": "rgba(248,113,113,0.08)"
+    },
+    "dovish_longwar_strong": {
+      "title": "🟠 Energy Security Premium + Structural Inflation",
+      "over": [
+        "Commodities",
+        "Gas infrastructure",
+        "Pipelines"
+      ],
+      "under": [
+        "High P/E tech",
+        "Rate-sensitive bonds"
+      ],
+      "hedge": [
+        "Gold 8%"
+      ],
+      "note": "Long war embeds structural inflation. Cuts forced by politics — stagflation risk elevated.",
+      "color": "rgba(251,115,61,0.08)"
+    },
+    "dovish_longwar_base": {
+      "title": "🟠 Commodities + Infrastructure Core",
+      "over": [
+        "US energy infrastructure",
+        "LNG",
+        "Midstream"
+      ],
+      "under": [
+        "Long-duration everything"
+      ],
+      "hedge": [
+        "Gold",
+        "TIPS"
+      ],
+      "note": "Long war + dovish = embedded inflation. Real assets outperform financial assets.",
+      "color": "rgba(251,115,61,0.08)"
+    },
+    "dovish_longwar_slowing": {
+      "title": "🔴 Stagflation Maximum",
+      "over": [
+        "Hard assets",
+        "Commodity infrastructure"
+      ],
+      "under": [
+        "Equities broadly"
+      ],
+      "hedge": [
+        "Gold 10%",
+        "Cash 20%"
+      ],
+      "note": "Worst macro combination for equity multiples. Only contracted cash flows survive.",
+      "color": "rgba(248,113,113,0.08)"
+    },
+    "dovish_longwar_recession": {
+      "title": "🔴 Extreme Stagflation",
+      "over": [
+        "Physical gold",
+        "Cash"
+      ],
+      "under": [
+        "All financial assets"
+      ],
+      "hedge": [
+        "Max defensive allocation"
+      ],
+      "note": "Historical precedent: 1970s stagflation. Energy assets as real stores of value only.",
+      "color": "rgba(248,113,113,0.12)"
+    },
+    "neutral_deesc_strong": {
+      "title": "🟢 Selective Growth — Quality Wins",
+      "over": [
+        "AI Infra quality (VRT, GEV)",
+        "Oil majors (XOM, COP)",
+        "Midstream"
+      ],
+      "under": [
+        "Speculative biotech",
+        "Unprofitable tech"
+      ],
+      "hedge": [],
+      "note": "Current near-optimal scenario. Buy quality, avoid narrative. Conviction sizing matters most here.",
+      "color": "rgba(74,222,128,0.10)"
+    },
+    "neutral_deesc_base": {
+      "title": "🟢 Quality Growth — Core Positions",
+      "over": [
+        "AI Infra (VRT, SBGSY)",
+        "TMO/DHR",
+        "LNG"
+      ],
+      "under": [
+        "Speculative, unprofitable"
+      ],
+      "hedge": [],
+      "note": "Reward quality over narrative. Staged accumulation in highest-conviction names.",
+      "color": "rgba(74,222,128,0.08)"
+    },
+    "neutral_base_strong": {
+      "title": "🟡 Base Case — Balanced Positioning",
+      "over": [
+        "LNG contracted",
+        "AI Infra (VRT)",
+        "Energy majors"
+      ],
+      "under": [
+        "Broad market ETFs",
+        "ICLN/TAN"
+      ],
+      "hedge": [
+        "Small cash reserve"
+      ],
+      "note": "Today's regime (Apr 2026). Hold core, selectively add on dips.",
+      "color": "rgba(251,191,36,0.10)"
+    },
+    "neutral_base_base": {
+      "title": "🟡 CURRENT REGIME — Disciplined Core Holdings",
+      "over": [
+        "LNG (Cheniere/WMB)",
+        "VRT (AI power)",
+        "Oil majors",
+        "Midstream"
+      ],
+      "under": [
+        "Broad clean energy ETFs",
+        "Frothy SMID growth",
+        "Unprofitable biotech"
+      ],
+      "hedge": [
+        "5–10% cash"
+      ],
+      "note": "⚡ This matches your current setting. Focus on cash-flow visibility. No thesis without earnings.",
+      "color": "rgba(251,191,36,0.12)",
+      "highlight": true
+    },
+    "neutral_base_slowing": {
+      "title": "🟡 Defensively Positioned — Cash Flows First",
+      "over": [
+        "Midstream (TRGP, WMB)",
+        "LNG income",
+        "TMO/DHR normalisation"
+      ],
+      "under": [
+        "SMID E&P",
+        "Speculative biotech",
+        "High-multiple AI"
+      ],
+      "hedge": [
+        "10% cash",
+        "Reduce AI Infra to only VRT"
+      ],
+      "note": "Slowing growth + neutral Fed = earnings pressure building. Rotate toward contracted revenues.",
+      "color": "rgba(251,191,36,0.08)"
+    },
+    "neutral_base_recession": {
+      "title": "🟠 Risk-Off — Contracted Cashflows Only",
+      "over": [
+        "Midstream",
+        "LNG SPAs",
+        "Dividends (XOM, COP buyback floor)"
+      ],
+      "under": [
+        "All speculative",
+        "High multiple",
+        "SMID anything"
+      ],
+      "hedge": [
+        "15% cash",
+        "Gold 5%"
+      ],
+      "note": "Reduce portfolio to only highest-conviction cash flow generators. Size down across the board.",
+      "color": "rgba(251,115,61,0.08)"
+    },
+    "neutral_esc_strong": {
+      "title": "🟡 Energy Security — US Domestic Focus",
+      "over": [
+        "US LNG",
+        "Integrated majors",
+        "Defense contractors"
+      ],
+      "under": [
+        "European energy companies",
+        "Consumer cyclicals"
+      ],
+      "hedge": [
+        "Gold 5%"
+      ],
+      "note": "Escalation with decent growth = energy security premium is your friend. US domestic names.",
+      "color": "rgba(251,191,36,0.08)"
+    },
+    "neutral_esc_base": {
+      "title": "🟡 Defensive Posture — Hard Assets",
+      "over": [
+        "Oil majors",
+        "Gas infra",
+        "Midstream"
+      ],
+      "under": [
+        "Long-duration, consumer, travel"
+      ],
+      "hedge": [
+        "Gold 5–8%"
+      ],
+      "note": "Geopolitical risk premium is real. Avoid anything with European supply chain exposure.",
+      "color": "rgba(251,191,36,0.08)"
+    },
+    "neutral_esc_slowing": {
+      "title": "🟠 Hard Assets + Defense",
+      "over": [
+        "Oil majors",
+        "Pipelines",
+        "Defense ETFs"
+      ],
+      "under": [
+        "Consumer cyclicals",
+        "Global supply chain"
+      ],
+      "hedge": [
+        "Gold 8%",
+        "Cash 12%"
+      ],
+      "note": "Triple headwind scenario starting to form. Narrow position list aggressively.",
+      "color": "rgba(251,115,61,0.08)"
+    },
+    "neutral_esc_recession": {
+      "title": "🔴 Defensive Maximum",
+      "over": [
+        "Gold",
+        "Cash",
+        "LNG contracted income"
+      ],
+      "under": [
+        "Most equities"
+      ],
+      "hedge": [
+        "Gold 10%",
+        "Cash 20%"
+      ],
+      "note": "Escalation + recession + neutral Fed = Fed can't save you. Capital preservation mode.",
+      "color": "rgba(248,113,113,0.08)"
+    },
+    "neutral_longwar_strong": {
+      "title": "🟠 Hard Assets — Inflation Embedded",
+      "over": [
+        "US energy infrastructure",
+        "Commodity plays",
+        "Pipelines"
+      ],
+      "under": [
+        "Long duration",
+        "High-multiple tech"
+      ],
+      "hedge": [
+        "TIPS",
+        "Gold 7%"
+      ],
+      "note": "Long war + neutral + strong growth = unusual combo. Energy security premium dominant.",
+      "color": "rgba(251,115,61,0.08)"
+    },
+    "neutral_longwar_base": {
+      "title": "🟠 Pipelines + Inflation Plays",
+      "over": [
+        "Midstream",
+        "LNG",
+        "Real assets broadly"
+      ],
+      "under": [
+        "Long-duration equities",
+        "Discretionary"
+      ],
+      "hedge": [
+        "Gold 8%",
+        "TIPS"
+      ],
+      "note": "Real assets outperform. Contracted revenues with inflation pass-through best risk-reward.",
+      "color": "rgba(251,115,61,0.08)"
+    },
+    "neutral_longwar_slowing": {
+      "title": "🔴 Stagflationary — Reduce Broadly",
+      "over": [
+        "Pipelines",
+        "Gold"
+      ],
+      "under": [
+        "Everything else"
+      ],
+      "hedge": [
+        "Cash 20%",
+        "Gold 10%"
+      ],
+      "note": "Long war + slowing + neutral = stagflation building. Reduce equities, increase real assets.",
+      "color": "rgba(248,113,113,0.08)"
+    },
+    "neutral_longwar_recession": {
+      "title": "🔴 Extreme Caution — Capital Preservation",
+      "over": [
+        "Gold",
+        "Cash",
+        "Short-duration"
+      ],
+      "under": [
+        "All equities"
+      ],
+      "hedge": [
+        "Max defensive"
+      ],
+      "note": "Long war embedding inflation into recession. Very few safe harbors in public markets.",
+      "color": "rgba(248,113,113,0.12)"
+    },
+    "hawkish_deesc_strong": {
+      "title": "🟡 Value + FCF — P/E Compression Risk",
+      "over": [
+        "Energy value (XOM, COP)",
+        "Midstream yield",
+        "FCF generators"
+      ],
+      "under": [
+        "Growth tech",
+        "Duration",
+        "Speculative biotech"
+      ],
+      "hedge": [],
+      "note": "Hikes into peace + growth = P/E compression hurts multiples. Only buy what earns today.",
+      "color": "rgba(251,191,36,0.08)"
+    },
+    "hawkish_deesc_base": {
+      "title": "🟡 Selective Value",
+      "over": [
+        "FCF yield plays: LNG, midstream, majors"
+      ],
+      "under": [
+        "All speculative",
+        "High-multiple AI Infra"
+      ],
+      "hedge": [
+        "10% cash"
+      ],
+      "note": "Value wins over growth when rates are high and staying there. Only buy what earns now.",
+      "color": "rgba(251,191,36,0.08)"
+    },
+    "hawkish_base_strong": {
+      "title": "🟡 Cautious — FCF Yield Focus",
+      "over": [
+        "LNG contracted income",
+        "Midstream",
+        "Majors FCF"
+      ],
+      "under": [
+        "All speculative",
+        "High-multiple"
+      ],
+      "hedge": [
+        "10% cash"
+      ],
+      "note": "Hawkish + base conflict = rate pressure meets decent growth. Quality cash flows only.",
+      "color": "rgba(251,191,36,0.08)"
+    },
+    "hawkish_base_base": {
+      "title": "🟠 Cautious Positioning — Defensive Bias",
+      "over": [
+        "FCF yield: LNG, midstream, majors"
+      ],
+      "under": [
+        "All speculative",
+        "High-multiple AI",
+        "Bio-AI pure plays"
+      ],
+      "hedge": [
+        "12% cash",
+        "Reduce VRT"
+      ],
+      "note": "Hawkish hold + base = only buy what earns. No thesis supported by future multiples.",
+      "color": "rgba(251,115,61,0.08)"
+    },
+    "hawkish_base_slowing": {
+      "title": "🟠 Reduce Growth Exposure",
+      "over": [
+        "Defensive cash flows only"
+      ],
+      "under": [
+        "Growth equities",
+        "SMID",
+        "Speculative"
+      ],
+      "hedge": [
+        "Cash 15%"
+      ],
+      "note": "Slowing growth + hawkish = earnings compression + multiple compression simultaneously.",
+      "color": "rgba(251,115,61,0.08)"
+    },
+    "hawkish_base_recession": {
+      "title": "🔴 Recession + Hikes = Forced Fed Pivot Coming",
+      "over": [
+        "Short-duration fixed income",
+        "Defensive stocks"
+      ],
+      "under": [
+        "Most equities — wait for pivot"
+      ],
+      "hedge": [
+        "Cash 20%+",
+        "Short-duration bonds"
+      ],
+      "note": "Position for forced pivot. Buy LNG/VRT when Fed capitulates. Don't front-run the pivot.",
+      "color": "rgba(248,113,113,0.08)"
+    },
+    "hawkish_esc_strong": {
+      "title": "🔴 Rare High-Risk Combination",
+      "over": [
+        "Short duration",
+        "Commodity spot",
+        "Gold"
+      ],
+      "under": [
+        "Most equities",
+        "Highest multiple worst"
+      ],
+      "hedge": [
+        "Gold 8%",
+        "Cash 15%"
+      ],
+      "note": "Hawkish + escalation = max uncertainty. Reduce size broadly. Don't be a hero.",
+      "color": "rgba(248,113,113,0.08)"
+    },
+    "hawkish_esc_base": {
+      "title": "🔴 Risk-Off — Commodities + Gold",
+      "over": [
+        "Hard commodities",
+        "Gold",
+        "Cash"
+      ],
+      "under": [
+        "Equities broadly"
+      ],
+      "hedge": [
+        "Gold 10%",
+        "Cash 20%"
+      ],
+      "note": "Rare but dangerous combo. Few equity positions justified. Wait for clarity.",
+      "color": "rgba(248,113,113,0.08)"
+    },
+    "hawkish_esc_slowing": {
+      "title": "🔴 Preserve Capital",
+      "over": [
+        "Cash",
+        "Gold"
+      ],
+      "under": [
+        "All equities"
+      ],
+      "hedge": [
+        "Max defensive"
+      ],
+      "note": "Three risk factors simultaneous. Preserve capital as priority #1.",
+      "color": "rgba(248,113,113,0.10)"
+    },
+    "hawkish_esc_recession": {
+      "title": "🔴 Crisis Mode",
+      "over": [
+        "Cash",
+        "Gold",
+        "Short treasuries"
+      ],
+      "under": [
+        "All equities"
+      ],
+      "hedge": [
+        "Full defensive"
+      ],
+      "note": "This is the scenario to have been positioned for 6 months ago. Don't panic-sell; hold cash.",
+      "color": "rgba(248,113,113,0.15)"
+    },
+    "hawkish_longwar_strong": {
+      "title": "🟠 Hard Assets Only",
+      "over": [
+        "Commodity producers",
+        "Energy infrastructure"
+      ],
+      "under": [
+        "Growth equities",
+        "Duration"
+      ],
+      "hedge": [
+        "Gold 8%"
+      ],
+      "note": "Strong growth + war + hikes = 1970s echo. Energy and commodity assets win.",
+      "color": "rgba(251,115,61,0.08)"
+    },
+    "hawkish_longwar_base": {
+      "title": "🟠 Defensive Energy Focus",
+      "over": [
+        "Midstream",
+        "Integrated majors",
+        "Cash dividends"
+      ],
+      "under": [
+        "SMID growth",
+        "High multiple"
+      ],
+      "hedge": [
+        "Gold 8%",
+        "Cash 12%"
+      ],
+      "note": "War premium partially offsets rate pressure in energy. Careful sizing.",
+      "color": "rgba(251,115,61,0.08)"
+    },
+    "hawkish_longwar_slowing": {
+      "title": "🔴 Defensive Maximum — Very Few Positions",
+      "over": [
+        "Gold",
+        "Defense ETFs",
+        "Cash"
+      ],
+      "under": [
+        "Equities broadly"
+      ],
+      "hedge": [
+        "Max defensive"
+      ],
+      "note": "Very few equity positions can navigate this. Cash + gold + short duration.",
+      "color": "rgba(248,113,113,0.10)"
+    },
+    "hawkish_longwar_recession": {
+      "title": "🔴 Exceptional Risk — Historical Parallel: 1974",
+      "over": [
+        "Physical commodities",
+        "Cash",
+        "Gold"
+      ],
+      "under": [
+        "All financial assets"
+      ],
+      "hedge": [
+        "Max defensive"
+      ],
+      "note": "Historical parallel: 1973–74 stagflation + oil shock. Equities -40% peak to trough. Prepare.",
+      "color": "rgba(248,113,113,0.15)"
+    },
+    "hiking_deesc_strong": {
+      "title": "🟡 Value Wins — 2022 Energy Echo",
+      "over": [
+        "Cheap energy (CIVI, NOG)",
+        "High-yield pipelines"
+      ],
+      "under": [
+        "Tech growth",
+        "Biotech",
+        "Long bonds"
+      ],
+      "hedge": [],
+      "note": "Hikes into peace + growth = 2022 redux. Energy value worked then, likely again.",
+      "color": "rgba(251,191,36,0.08)"
+    },
+    "hiking_deesc_base": {
+      "title": "🟡 Value + FCF — No Growth Premium",
+      "over": [
+        "Energy FCF stories",
+        "Midstream yield"
+      ],
+      "under": [
+        "Growth equities",
+        "Long duration"
+      ],
+      "hedge": [
+        "10% cash"
+      ],
+      "note": "Hiking cycle punishes growth multiples. Only own things with current earnings.",
+      "color": "rgba(251,191,36,0.08)"
+    },
+    "hiking_base_strong": {
+      "title": "🟠 Active Hiking — Selective Defense",
+      "over": [
+        "Energy majors (dividends)",
+        "Midstream",
+        "Cash"
+      ],
+      "under": [
+        "SMID growth",
+        "High multiple plays"
+      ],
+      "hedge": [
+        "12% cash"
+      ],
+      "note": "Hiking + base = multiple compression everywhere. Energy dividend yield floor helps.",
+      "color": "rgba(251,115,61,0.08)"
+    },
+    "hiking_base_base": {
+      "title": "🟠 Selective Defense — Income Focus",
+      "over": [
+        "Diversified energy majors",
+        "Cash dividends",
+        "Midstream income"
+      ],
+      "under": [
+        "SMID anything",
+        "Speculative"
+      ],
+      "hedge": [
+        "12% cash"
+      ],
+      "note": "Active hiking + base growth = earnings matter, nothing else. Yield > growth.",
+      "color": "rgba(251,115,61,0.08)"
+    },
+    "hiking_base_slowing": {
+      "title": "🔴 Policy Error Risk — Reduce All Growth",
+      "over": [
+        "Short-duration bonds",
+        "Energy income"
+      ],
+      "under": [
+        "Growth equities",
+        "Long duration"
+      ],
+      "hedge": [
+        "Gold 8%",
+        "Cash 20%"
+      ],
+      "note": "Hiking into slowing growth = policy error scenario. Position for forced pivot.",
+      "color": "rgba(248,113,113,0.08)"
+    },
+    "hiking_base_recession": {
+      "title": "🔴 Policy Error Confirmed",
+      "over": [
+        "Cash",
+        "Short-term treasuries"
+      ],
+      "under": [
+        "Almost all equities"
+      ],
+      "hedge": [
+        "Max cash",
+        "Short duration bonds"
+      ],
+      "note": "Fed hiking into recession = 2008 delayed response scenario. Capital preservation only.",
+      "color": "rgba(248,113,113,0.12)"
+    },
+    "hiking_esc_strong": {
+      "title": "🔴 Defensive Maximum in Equity Space",
+      "over": [
+        "Gold",
+        "Defense ETFs",
+        "Energy as inflation hedge"
+      ],
+      "under": [
+        "Most equities — max caution"
+      ],
+      "hedge": [
+        "Gold 8%",
+        "Cash 15%"
+      ],
+      "note": "Very rare high-risk combo. Hiking + escalation = reduce equity exposure broadly.",
+      "color": "rgba(248,113,113,0.10)"
+    },
+    "hiking_esc_base": {
+      "title": "🔴 Broad Risk-Off — Few Exceptions",
+      "over": [
+        "Gold",
+        "US domestic energy",
+        "Cash"
+      ],
+      "under": [
+        "Equities broadly"
+      ],
+      "hedge": [
+        "Max defensive"
+      ],
+      "note": "War premium + hiking = almost nothing works except hard assets and short duration.",
+      "color": "rgba(248,113,113,0.12)"
+    },
+    "hiking_esc_slowing": {
+      "title": "🔴 Crisis Regime — Near-Zero Equity Allocation",
+      "over": [
+        "Physical gold",
+        "Cash"
+      ],
+      "under": [
+        "All equities"
+      ],
+      "hedge": [
+        "Full defensive: 25%+ cash, 10% gold"
+      ],
+      "note": "Three simultaneous risk factors. Lowest equity allocation justified.",
+      "color": "rgba(248,113,113,0.15)"
+    },
+    "hiking_esc_recession": {
+      "title": "🔴 Exceptional Risk — Historical Extremes",
+      "over": [
+        "Physical gold",
+        "Cash"
+      ],
+      "under": [
+        "Everything"
+      ],
+      "hedge": [
+        "Maximum defensive"
+      ],
+      "note": "Extreme scenario. Historical parallel: worst quarters of 1974, 1980, 2008. Preserve capital.",
+      "color": "rgba(248,113,113,0.18)"
+    },
+    "hiking_longwar_strong": {
+      "title": "🟠 Hard Assets — Limited Equity Opportunity",
+      "over": [
+        "Commodity spot",
+        "Energy infrastructure"
+      ],
+      "under": [
+        "Growth",
+        "Duration"
+      ],
+      "hedge": [
+        "Gold 8%"
+      ],
+      "note": "Strong growth partially offsets but war + hikes = constrained equity upside.",
+      "color": "rgba(251,115,61,0.08)"
+    },
+    "hiking_longwar_base": {
+      "title": "🔴 Defensive Focus",
+      "over": [
+        "Gold",
+        "Short duration",
+        "Cash dividends"
+      ],
+      "under": [
+        "All high-multiple equities"
+      ],
+      "hedge": [
+        "Gold 10%",
+        "Cash 15%"
+      ],
+      "note": "Long war + hiking + base = stagflation building. Only own real return generators.",
+      "color": "rgba(248,113,113,0.08)"
+    },
+    "hiking_longwar_slowing": {
+      "title": "🔴 Near-Maximum Caution",
+      "over": [
+        "Cash",
+        "Gold"
+      ],
+      "under": [
+        "All equities"
+      ],
+      "hedge": [
+        "25%+ cash",
+        "10% gold"
+      ],
+      "note": "Very few equity positions. Hiking into war + slowdown = systematic risk premium collapses.",
+      "color": "rgba(248,113,113,0.12)"
+    },
+    "hiking_longwar_recession": {
+      "title": "🔴 MAXIMUM CAUTION — All Risk Factors Aligned",
+      "over": [
+        "Physical gold",
+        "Cash",
+        "Short-duration government bonds"
+      ],
+      "under": [
+        "All financial assets"
+      ],
+      "hedge": [
+        "Maximum possible defensive allocation"
+      ],
+      "note": "Every risk factor firing simultaneously. Equity allocation approaches zero. This is when fortunes are lost or preserved. Preserve.",
+      "color": "rgba(248,113,113,0.20)"
+    },
+    "dovish_deesc_slowing": {
+      "title": "🟡 Growth Fades but Fed Cuts — Quality Defensive",
+      "over": [
+        "Midstream pipelines (TRGP, WMB)",
+        "LNG contracted income",
+        "TMO/DHR"
+      ],
+      "under": [
+        "SMID E&P",
+        "High-multiple speculative",
+        "Pure-play growth"
+      ],
+      "hedge": [
+        "8% cash"
+      ],
+      "note": "De-escalation removes war risk but slowing growth limits upside. Cuts help duration. Stick to quality cash flows.",
+      "color": "rgba(251,191,36,0.08)"
+    },
+    "dovish_deesc_recession": {
+      "title": "🟠 Recession + Cuts — Forced Risk-Off Despite Peace",
+      "over": [
+        "Contracted income (LNG SPAs)",
+        "Midstream",
+        "Short-duration"
+      ],
+      "under": [
+        "Cyclicals",
+        "SMID E&P",
+        "All speculative"
+      ],
+      "hedge": [
+        "Gold 5%",
+        "Cash 12%"
+      ],
+      "note": "Peace helps sentiment but recession overrides. Cuts provide some relief — buy quality on the lows.",
+      "color": "rgba(251,115,61,0.08)"
+    },
+    "neutral_deesc_slowing": {
+      "title": "🟡 Selective Defensives — Peace Dividend Fading",
+      "over": [
+        "Midstream yield",
+        "LNG income",
+        "TMO/DHR normalisation"
+      ],
+      "under": [
+        "SMID E&P",
+        "High-multiple AI",
+        "Speculative biotech"
+      ],
+      "hedge": [
+        "10% cash"
+      ],
+      "note": "De-escalation premium already priced in. Slowing growth dominates. Rotate toward contracted revenues.",
+      "color": "rgba(251,191,36,0.08)"
+    },
+    "neutral_deesc_recession": {
+      "title": "🟠 Risk-Off — Recession Trumps Peace",
+      "over": [
+        "Midstream",
+        "LNG contracts",
+        "Defensive dividends"
+      ],
+      "under": [
+        "All speculative",
+        "SMID",
+        "High-multiple"
+      ],
+      "hedge": [
+        "12% cash",
+        "Gold 5%"
+      ],
+      "note": "Recession + neutral = Fed forced to cut eventually. Position for pivot but don't front-run. Quality only.",
+      "color": "rgba(251,115,61,0.08)"
+    },
+    "hawkish_deesc_slowing": {
+      "title": "🟠 Compression Risk — Slowing + High Rates",
+      "over": [
+        "FCF yield: LNG, midstream",
+        "Defensive energy dividends"
+      ],
+      "under": [
+        "Growth equities",
+        "All speculative",
+        "High-multiple"
+      ],
+      "hedge": [
+        "15% cash"
+      ],
+      "note": "Hawkish + slowing = policy error risk. Only own what earns today. Prepare for forced pivot buying opportunity.",
+      "color": "rgba(251,115,61,0.08)"
+    },
+    "hawkish_deesc_recession": {
+      "title": "🔴 Policy Error — Forced Pivot Coming",
+      "over": [
+        "Cash",
+        "Short-duration bonds",
+        "Waiting for pivot"
+      ],
+      "under": [
+        "Equities broadly — wait"
+      ],
+      "hedge": [
+        "20% cash",
+        "Short duration"
+      ],
+      "note": "Fed hiking into recession despite de-escalation = policy error confirmed. Sit in cash; buy aggressively on first cut signal.",
+      "color": "rgba(248,113,113,0.08)"
+    },
+    "hiking_deesc_slowing": {
+      "title": "🔴 Policy Error Building — Capital Preservation",
+      "over": [
+        "Cash",
+        "Short bonds",
+        "Energy dividends as income"
+      ],
+      "under": [
+        "All growth",
+        "Speculative",
+        "Long duration equities"
+      ],
+      "hedge": [
+        "20% cash"
+      ],
+      "note": "Active hiking + slowing = Fed behind the curve. Reduce equity exposure significantly. Wait for the pivot.",
+      "color": "rgba(248,113,113,0.08)"
+    },
+    "hiking_deesc_recession": {
+      "title": "🔴 Policy Error Confirmed — Maximum Cash",
+      "over": [
+        "Cash",
+        "Short-duration government bonds"
+      ],
+      "under": [
+        "All equities — wait for capitulation + pivot"
+      ],
+      "hedge": [
+        "25%+ cash",
+        "Short duration"
+      ],
+      "note": "Hiking into recession with de-escalation = pure policy error. This is the time to build the shopping list, not the portfolio.",
+      "color": "rgba(248,113,113,0.10)"
+    }
+  }
+}

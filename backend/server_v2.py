@@ -26,7 +26,10 @@ Endpoints:
   DELETE /portfolio/{id}                 → remove holding
   GET  /portfolio/snapshot               → enriched holdings, totals, daily P&L %, 30d chart, allocation by type
   GET  /verdict                          → finance rule warnings
-  GET  /api/readiness                    → health gate from cross_app.daily_snapshot (MY PENS bridge)
+  GET  /impulses                          → last N trade impulses (cross_app.impulses, source='trade_router')
+  POST /impulses                          → log a trade impulse (ticker, direction, reason)
+  PUT  /impulses/{id}                     → mark impulse acted / reviewed
+  GET  /moving/snapshot                   → Cadix/moving dashboard export (JSON file)
   POST /cron/daily-cross-app             → write cross_app.daily_snapshot (Bearer CRON_SECRET)
   WS   /ws/prices                        → streaming: stocks + fx + macro every 30s
 
@@ -46,7 +49,7 @@ import string
 import re
 import time as time_module
 from collections import Counter
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timedelta
 from typing import Any, Optional
 from urllib.parse import quote
 from zoneinfo import ZoneInfo
@@ -109,6 +112,10 @@ SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
 SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
 CRON_SECRET = os.environ.get("CRON_SECRET", "")
 INVESTING_MACRO_REGIME = os.environ.get("INVESTING_MACRO_REGIME", "neutral")
+MOVING_SNAPSHOT_PATH = os.environ.get(
+    "MOVING_SNAPSHOT_PATH",
+    os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "data", "moving_snapshot.json")),
+)
 
 # ── Caches ───────────────────────────────────────────────────────────────────
 
@@ -498,49 +505,93 @@ async def _cross_app_upsert_daily(date_str: str, regime: str | None, pnl_pct: fl
     if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
         log.warning("cross_app upsert skipped — no Supabase credentials")
         return False
+    # Writes to public.daily_snapshot view (INSTEAD OF INSERT trigger upserts into cross_app schema).
+    # COALESCE in the trigger means only non-null fields overwrite existing values.
     base = f"{SUPABASE_URL}/rest/v1/daily_snapshot"
     headers = {
         "apikey": SUPABASE_SERVICE_ROLE_KEY,
         "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}",
         "Content-Type": "application/json",
-        "Content-Profile": "cross_app",
-        "Accept-Profile": "cross_app",
+        "Prefer": "return=minimal",
     }
-    patch_body: dict[str, Any] = {}
+    body: dict[str, Any] = {"date": date_str}
     if regime is not None:
-        patch_body["regime"] = regime
+        body["regime"] = regime
     if pnl_pct is not None:
-        patch_body["portfolio_pnl_pct"] = pnl_pct
+        body["pnl_pct"] = pnl_pct
     try:
         async with httpx.AsyncClient() as client:
-            sel = await client.get(f"{base}?date=eq.{date_str}&select=date", headers=headers, timeout=15.0)
-            exists = sel.status_code == 200 and isinstance(sel.json(), list) and len(sel.json()) > 0
-            if exists:
-                if not patch_body:
-                    return True
-                r = await client.patch(
-                    f"{base}?date=eq.{date_str}",
-                    headers={**headers, "Prefer": "return=minimal"},
-                    json=patch_body,
-                    timeout=15.0,
-                )
-                ok = r.status_code in (200, 204)
-                if not ok:
-                    log.warning("cross_app PATCH HTTP %s: %s", r.status_code, r.text[:200])
-                return ok
-            insert: dict[str, Any] = {"date": date_str, **patch_body}
-            r = await client.post(
-                base,
-                headers={**headers, "Prefer": "return=minimal"},
-                json=insert,
-                timeout=15.0,
-            )
+            r = await client.post(base, headers=headers, json=body, timeout=15.0)
             ok = r.status_code in (200, 201, 204)
             if not ok:
                 log.warning("cross_app POST HTTP %s: %s", r.status_code, r.text[:200])
             return ok
     except Exception as exc:
         log.warning("cross_app upsert failed: %s", exc)
+        return False
+
+
+# ── Trade impulse router (cross_app.impulses, source='trade_router') ─────────
+# Raw REST (not supabase-py) because impulses lives in the cross_app schema,
+# not public — PostgREST needs the Accept-Profile / Content-Profile headers.
+
+_CROSS_APP_AUTH_HEADERS = {
+    "apikey": SUPABASE_SERVICE_ROLE_KEY,
+    "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}",
+    "Content-Type": "application/json",
+}
+
+
+async def _impulses_list(limit: int = 5, source: str = "trade_router") -> list[dict[str, Any]]:
+    if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
+        return []
+    headers = {**_CROSS_APP_AUTH_HEADERS, "Accept-Profile": "cross_app"}
+    params = f"source=eq.{quote(source)}&select=*&order=created_at.desc&limit={int(limit)}"
+    try:
+        async with httpx.AsyncClient() as client:
+            r = await client.get(f"{SUPABASE_URL}/rest/v1/impulses?{params}", headers=headers, timeout=15.0)
+            if r.status_code != 200:
+                log.warning("impulses list HTTP %s: %s", r.status_code, r.text[:200])
+                return []
+            return r.json()
+    except Exception as exc:
+        log.warning("impulses list failed: %s", exc)
+        return []
+
+
+async def _impulse_insert(ticker: str, direction: str | None, reason: str | None) -> dict[str, Any] | None:
+    if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
+        return None
+    headers = {**_CROSS_APP_AUTH_HEADERS, "Content-Profile": "cross_app", "Prefer": "return=representation"}
+    body = {"source": "trade_router", "ticker": ticker, "direction": direction, "reason": reason}
+    try:
+        async with httpx.AsyncClient() as client:
+            r = await client.post(f"{SUPABASE_URL}/rest/v1/impulses", headers=headers, json=body, timeout=15.0)
+            if r.status_code not in (200, 201):
+                log.warning("impulse insert HTTP %s: %s", r.status_code, r.text[:200])
+                return None
+            data = r.json()
+            return data[0] if isinstance(data, list) and data else None
+    except Exception as exc:
+        log.warning("impulse insert failed: %s", exc)
+        return None
+
+
+async def _impulse_update(impulse_id: str, patch: dict[str, Any]) -> bool:
+    if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
+        return False
+    headers = {**_CROSS_APP_AUTH_HEADERS, "Content-Profile": "cross_app", "Prefer": "return=minimal"}
+    try:
+        async with httpx.AsyncClient() as client:
+            r = await client.patch(
+                f"{SUPABASE_URL}/rest/v1/impulses?id=eq.{quote(str(impulse_id))}",
+                headers=headers,
+                json=patch,
+                timeout=15.0,
+            )
+            return r.status_code in (200, 204)
+    except Exception as exc:
+        log.warning("impulse update failed: %s", exc)
         return False
 
 
@@ -770,6 +821,58 @@ async def cron_daily_cross_app(authorization: Optional[str] = Header(None)):
     pnl = snap.get("daily_pnl_pct")
     ok = await _cross_app_upsert_daily(d, regime, pnl)
     return {"ok": ok, "date": d, "regime": regime, "portfolio_pnl_pct": pnl}
+
+
+@app.get("/impulses")
+async def impulses_list(limit: int = Query(5, ge=1, le=50)):
+    """Last N trade impulses (cross_app.impulses, source='trade_router')."""
+    rows = await _impulses_list(limit=limit)
+    return {"ok": True, "impulses": rows, "supabase": bool(SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY)}
+
+
+@app.post("/impulses")
+async def impulses_add(body: dict[str, Any] = Body(...)):
+    """Log a trade impulse — 'I want to trade' button in the dashboard header."""
+    ticker = str(body.get("ticker") or "").strip().upper()
+    if not ticker:
+        return {"ok": False, "error": "ticker is required"}
+    direction = (body.get("direction") or None)
+    reason = (body.get("reason") or None)
+    row = await _impulse_insert(ticker, direction, reason)
+    if row is None:
+        return {"ok": False, "error": "Supabase not configured or insert failed — see backend logs"}
+    return {"ok": True, "impulse": row}
+
+
+@app.put("/impulses/{impulse_id}")
+async def impulses_update(impulse_id: str, body: dict[str, Any] = Body(...)):
+    """Mark an impulse acted / reviewed."""
+    patch: dict[str, Any] = {}
+    if "acted" in body:
+        patch["acted"] = bool(body["acted"])
+    if "reviewed_at" in body:
+        patch["reviewed_at"] = body["reviewed_at"]
+    if not patch:
+        return {"ok": False, "error": "nothing to update — pass acted and/or reviewed_at"}
+    ok = await _impulse_update(impulse_id, patch)
+    return {"ok": ok}
+
+
+@app.get("/moving/snapshot")
+async def moving_snapshot():
+    """Cadix / Antwerpen moving decision export from Prive/moving property_scanner."""
+    path = MOVING_SNAPSHOT_PATH
+    if not os.path.isfile(path):
+        raise HTTPException(
+            status_code=404,
+            detail=f"No moving snapshot at {path}. Run: python Prive/moving/property_scanner.py",
+        )
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, json.JSONDecodeError) as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return {"ok": True, "path": path, "snapshot": data}
 
 
 # ── Fantasy game (Supabase: competitions, players, trades) ────────────────────
@@ -2253,97 +2356,6 @@ async def game_player_achievements(player_id: str):
             break
 
     return {"ok": True, "badges": badges, "source": "server"}
-
-
-# ── /api/readiness (MY PENS → cross_app bridge) ───────────────────────────────
-
-def _readiness_label(score: float) -> str:
-    if score >= 80:
-        return "Full recovery"
-    if score >= 65:
-        return "Good shape"
-    if score >= 50:
-        return "Reduced capacity"
-    if score >= 35:
-        return "Compromised"
-    return "Poor"
-
-
-def _readiness_from_snapshot(row: dict[str, Any]) -> dict[str, Any]:
-    sleep_score = row.get("sleep_score")
-    hrv_readiness = row.get("hrv_readiness")
-    sleep_hours = row.get("sleep_hours")
-    sleep_quality = row.get("sleep_quality")
-    sleep_hrv = row.get("sleep_hrv") or row.get("hrv")
-
-    if sleep_score is None and sleep_hours is not None and sleep_quality is not None:
-        hours_score = min(1.0, float(sleep_hours) / 8.0) * 60.0
-        quality_score = ((float(sleep_quality) - 1.0) / 4.0) * 40.0
-        sleep_score = round(hours_score + quality_score)
-
-    if sleep_score is None:
-        return {"connected": True, "available": False, "reason": "No sleep data in cross_app yet"}
-
-    sleep_score = float(sleep_score)
-    hrv_r = float(hrv_readiness) if hrv_readiness is not None else None
-    overall = round(sleep_score * 0.6 + hrv_r * 0.4) if hrv_r is not None else int(sleep_score)
-
-    return {
-        "connected": True,
-        "available": True,
-        "date": row.get("date"),
-        "sleepHours": float(sleep_hours) if sleep_hours is not None else None,
-        "sleepQuality": int(sleep_quality) if sleep_quality is not None else None,
-        "hrv": float(sleep_hrv) if sleep_hrv is not None else None,
-        "sleepScore": int(sleep_score),
-        "hrvReadiness": int(hrv_r) if hrv_r is not None else None,
-        "overallReadiness": overall,
-        "label": _readiness_label(overall),
-        "gate": {
-            "clear": overall >= 65,
-            "caution": 45 <= overall < 65,
-            "reduced": overall < 45,
-        },
-        "kellyMultiplier": 1.0 if overall >= 65 else (0.5 if overall >= 45 else 0.25),
-    }
-
-
-async def _cross_app_today_row() -> dict[str, Any] | None:
-    if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
-        return None
-    today = datetime.now(timezone.utc).date().isoformat()
-    base = f"{SUPABASE_URL}/rest/v1/daily_snapshot"
-    headers = {
-        "apikey": SUPABASE_SERVICE_ROLE_KEY,
-        "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}",
-        "Accept-Profile": "cross_app",
-    }
-    try:
-        async with httpx.AsyncClient() as client:
-            r = await client.get(
-                f"{base}?date=eq.{today}&select=*",
-                headers=headers,
-                timeout=15.0,
-            )
-            if r.status_code != 200:
-                return None
-            rows = r.json()
-            return rows[0] if isinstance(rows, list) and rows else None
-    except Exception as exc:
-        log.warning("cross_app today row failed: %s", exc)
-        return None
-
-
-@app.get("/api/readiness")
-async def api_readiness():
-    row = await _cross_app_today_row()
-    if not row:
-        return {
-            "connected": bool(SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY),
-            "available": False,
-            "reason": "No cross_app row for today — log sleep in MY PENS or run migration",
-        }
-    return _readiness_from_snapshot(row)
 
 
 # ── /health ───────────────────────────────────────────────────────────────────
